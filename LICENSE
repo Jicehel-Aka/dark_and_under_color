@@ -1,0 +1,73 @@
+BSD 3-Clause with Artistic Assets Exception (FR)
+
+Copyright (c) [année], [titulaire des droits]
+
+La redistribution et l'utilisation sous forme source ou binaire, avec ou sans modification, sont autorisées sous réserve du respect des conditions suivantes :
+
+Les redistributions du code source doivent conserver la présente notice de copyright, la présente liste de conditions et l'exonération de garantie ci-dessous.
+
+Les redistributions sous forme binaire doivent reproduire la présente notice de copyright, la présente liste de conditions et l'exonération de garantie ci-dessous dans la documentation et/ou les autres matériaux fournis avec la distribution.
+
+Ni le nom du titulaire des droits d'auteur ni les noms des contributeurs ne peuvent être utilisés pour promouvoir ou soutenir des produits dérivés de ce logiciel sans autorisation écrite préalable spécifique.
+
+Exception concernant les ressources graphiques
+
+Nonobstant toute autre disposition de la présente licence, les illustrations, graphismes, icônes, sprites, textures, logos, éléments visuels, concepts artistiques et toute autre ressource graphique fournie avec le projet (ci-après les « Ressources Graphiques ») ne sont pas couvertes par cette licence.
+
+Les Ressources Graphiques demeurent la propriété exclusive de leur auteur :
+
+[Nom du graphiste]
+
+Toute reproduction, modification, distribution, intégration dans un autre projet ou exploitation commerciale des Ressources Graphiques nécessite l'accord écrit préalable de leur auteur.
+
+L'autorisation accordée par la présente licence ne s'étend qu'au code, aux règles du jeu, aux mécaniques et aux autres éléments expressément couverts par celle-ci.
+
+LE LOGICIEL EST FOURNI « TEL QUEL », SANS GARANTIE D'AUCUNE SORTE, EXPRESSE OU IMPLICITE, Y COMPRIS MAIS SANS S'Y LIMITER LES GARANTIES DE QUALITÉ MARCHANDE ET D'ADÉQUATION À UN USAGE PARTICULIER.
+
+---
+
+Musique temporaire (piste de niveau, en boucle)
+
+« Pyramid Level » (issue de l'album *Songs From An Unmade World*) par
+Visager, utilisée sous licence Creative Commons Attribution 4.0
+(CC BY 4.0) — https://creativecommons.org/licenses/by/4.0/
+Source : http://freemusicarchive.org/music/Visager/Songs_From_An_Unmade_World/Visager_-_Songs_from_an_Unmade_World_-_15_Pyramid_Level_-Loop-
+
+Cette piste est un placeholder temporaire, destiné à être remplacé par
+une composition définitive.
+
+---
+
+Police "Simple 5x8"
+
+Police pixel 5×8 par Atom596, téléchargée sur 1001fonts.com, sous
+licence 1001Fonts Free For Commercial Use (FFC) — réutilisation libre,
+y compris commerciale : https://www.1001fonts.com/simple-5x8-font.html
+
+Utilisée pour le texte affiché par le jeu (dialogues, inventaire,
+stats), convertie en table de glyphes bitmap
+(`components/platform_aka/simple5x8_font.h`).
+
+BSD 3-Clause with Artistic Assets Exception (EN)
+
+Copyright (c) [year], [copyright holder]
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+Artistic Assets Exception
+
+Notwithstanding any other provision of this License, all artwork, illustrations, icons, sprites, textures, logos, visual designs, artistic concepts and any other graphic assets distributed with the project ("Artistic Assets") are excluded from this License.
+
+The Artistic Assets remain the exclusive property of:
+
+[Artist Name]
+
+No reproduction, modification, distribution, incorporation into another project, or commercial use of the Artistic Assets is permitted without the prior written consent of the author.
+
+The permissions granted by this License apply only to the software, game rules, mechanics and other materials explicitly covered by this License.

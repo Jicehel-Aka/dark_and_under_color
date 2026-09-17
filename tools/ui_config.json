@@ -1,0 +1,11 @@
+[
+  {"id": "UIMain",        "file": "UI_main.png"},
+  {"id": "UICompass",     "file": "UI_compass.png"},
+  {"id": "EnemyScratch",  "file": "ENM_scratch.png"},
+  {"id": "EnemySplat",    "file": "ENM_splat.png"},
+  {"id": "EnemyHPBar",    "file": "ENM_HPBar.png"},
+  {"id": "UISwordHit",    "file": "UI_swordHit.png"},
+  {"id": "EnemyRatSpriteSheet",      "file": "ENM_rat.png"},
+  {"id": "EnemySkeletonSpriteSheet", "file": "ENM_skelly.png"},
+  {"id": "LootXP",        "file": "LOOT_XP.png"}
+]

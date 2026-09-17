@@ -1,0 +1,71 @@
+name: Build PC (SDL)
+
+# Compile la build PC/SDL de test sur Windows ET Linux -- pas la build
+# AKA elle-meme (ESP-IDF, cross-compilation independante de l'OS hote,
+# voir build-aka.yml pour celle-la). C'est la build SDL qui est
+# genuinement dependante de la plateforme (SDL2/SDL2_image/SDL2_mixer
+# s'installent differemment sur chaque OS), d'ou la matrice ici.
+
+on:
+  push:
+    paths:
+      - 'platform_sdl/**'
+      - 'shared/**'
+      - '.github/workflows/build-pc.yml'
+  pull_request:
+    paths:
+      - 'platform_sdl/**'
+      - 'shared/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- Linux : SDL2/SDL2_image/SDL2_mixer via apt ---
+      - name: Install SDL2 (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
+
+      # --- Windows : SDL2/SDL2_image/SDL2_mixer via vcpkg ---
+      # (vcpkg est preinstalle sur les runners windows-latest de GitHub,
+      # VCPKG_ROOT est deja defini dans l'environnement)
+      - name: Install SDL2 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          vcpkg install sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows
+          echo "CMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" >> $env:GITHUB_ENV
+
+      - name: Configure (Linux)
+        if: runner.os == 'Linux'
+        run: cmake -S platform_sdl -B build
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: cmake -S platform_sdl -B build -DCMAKE_TOOLCHAIN_FILE="$env:CMAKE_TOOLCHAIN_FILE" -A x64
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: darkandundercolor-pc-${{ matrix.os }}
+          path: |
+            build/**/darkandundercolor_pc*
+            platform_sdl/data/
+            platform_sdl/lang/
+            platform_sdl/music/
+          if-no-files-found: warn

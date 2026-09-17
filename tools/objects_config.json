@@ -1,0 +1,14 @@
+[
+  {"id": "ObjPotionIcon",   "file": "OBJ_potionHP.png"},
+  {"id": "LootPotionFull",  "file": "LOOT_potionHP1.png"},
+  {"id": "LootPotionMed",   "file": "LOOT_potionHP2.png"},
+  {"id": "LootPotionSmall", "file": "LOOT_potionHP3.png"},
+  {"id": "ObjKeyIcon",      "file": "OBJ_key.png"},
+  {"id": "LootKeyFull",     "file": "LOOT_Key1.png"},
+  {"id": "LootKeyMed",      "file": "LOOT_key2.png"},
+  {"id": "LootKeySmall",    "file": "LOOT_key3.png"},
+  {"id": "ObjMagicIcon",    "file": "OBJ_magic.png"},
+  {"id": "LootMagicFull",   "file": "LOOT_magic1.png"},
+  {"id": "LootMagicMed",    "file": "LOOT_magic2.png"},
+  {"id": "LootMagicSmall",  "file": "LOOT_magic3.png"}
+]

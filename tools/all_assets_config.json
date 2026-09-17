@@ -1,0 +1,303 @@
+[
+  {
+    "id": "ObjPotionIcon",
+    "file": "OBJ_potionHP.png"
+  },
+  {
+    "id": "LootPotionFull",
+    "file": "LOOT_potionHP1.png"
+  },
+  {
+    "id": "LootPotionMed",
+    "file": "LOOT_potionHP2.png"
+  },
+  {
+    "id": "LootPotionSmall",
+    "file": "LOOT_potionHP3.png"
+  },
+  {
+    "id": "ObjKeyIcon",
+    "file": "OBJ_key.png"
+  },
+  {
+    "id": "LootKeyFull",
+    "file": "LOOT_Key1.png"
+  },
+  {
+    "id": "LootKeyMed",
+    "file": "LOOT_key2.png"
+  },
+  {
+    "id": "LootKeySmall",
+    "file": "LOOT_key3.png"
+  },
+  {
+    "id": "ObjMagicIcon",
+    "file": "OBJ_magic.png"
+  },
+  {
+    "id": "LootMagicFull",
+    "file": "LOOT_magic1.png"
+  },
+  {
+    "id": "LootMagicMed",
+    "file": "LOOT_magic2.png"
+  },
+  {
+    "id": "LootMagicSmall",
+    "file": "LOOT_magic3.png"
+  },
+  {
+    "id": "VisionBack",
+    "file": "dungeon_back1.png",
+    "gamma": 1.8
+  },
+  {
+    "id": "VisionBack2",
+    "file": "dungeon_back2.png",
+    "gamma": 1.8
+  },
+  {
+    "id": "FarWallFront",
+    "file": "dungeon_frontWall3.png"
+  },
+  {
+    "id": "FarestWallLeft",
+    "file": "dungeon_leftWall4.png"
+  },
+  {
+    "id": "FarestWallRight",
+    "file": "dungeon_rightWall4.png"
+  },
+  {
+    "id": "FarWallLeft",
+    "file": "dungeon_leftWall3.png"
+  },
+  {
+    "id": "FarWallLeft2",
+    "file": "dungeon_leftWall3_2.png"
+  },
+  {
+    "id": "FarWallRight",
+    "file": "dungeon_rightWall3.png"
+  },
+  {
+    "id": "FarWallRight2",
+    "file": "dungeon_rightWall3_2.png"
+  },
+  {
+    "id": "MidWallFront",
+    "file": "dungeon_frontWall2.png"
+  },
+  {
+    "id": "MidWallFront2",
+    "file": "dungeon_frontWall2_2.png"
+  },
+  {
+    "id": "MidWallLeft",
+    "file": "dungeon_leftWall2.png"
+  },
+  {
+    "id": "MidWallLeft2",
+    "file": "dungeon_leftWall2_2.png"
+  },
+  {
+    "id": "MidWallRight",
+    "file": "dungeon_rightWall2.png"
+  },
+  {
+    "id": "MidWallRight2",
+    "file": "dungeon_rightWall2_2.png"
+  },
+  {
+    "id": "CloseWallFront",
+    "file": "dungeon_frontWall1.png"
+  },
+  {
+    "id": "CloseWallFront2",
+    "file": "dungeon_frontWall1_2.png"
+  },
+  {
+    "id": "CloseWallLeft",
+    "file": "dungeon_leftWall1.png"
+  },
+  {
+    "id": "CloseWallLeft2",
+    "file": "dungeon_leftWall1_2.png"
+  },
+  {
+    "id": "CloseWallRight",
+    "file": "dungeon_rightWall1.png"
+  },
+  {
+    "id": "CloseWallRight2",
+    "file": "dungeon_rightWall1_2.png"
+  },
+  {
+    "id": "EnemyRatIconMed",
+    "file": "ENM_rat2.png"
+  },
+  {
+    "id": "EnemyRatIconSmall",
+    "file": "ENM_rat3.png"
+  },
+  {
+    "id": "EnemySkeletonIconMed",
+    "file": "ENM_skelly2.png"
+  },
+  {
+    "id": "EnemySkeletonIconSmall",
+    "file": "ENM_skelly3.png"
+  },
+  {
+    "id": "MinimapParchemin",
+    "file": "UI_parchemin.png"
+  },
+  {
+    "id": "WallMapMarker",
+    "file": "UI_wallMapMarker.png"
+  },
+  {
+    "id": "PlayerMapMarker1",
+    "file": "UI_playerMapMarker.png"
+  },
+  {
+    "id": "PlayerMapMarker2",
+    "file": "UI_playerMapMarker2.png"
+  },
+  {
+    "id": "PlayerMapMarker3",
+    "file": "UI_playerMapMarker3.png"
+  },
+  {
+    "id": "PlayerMapMarker4",
+    "file": "UI_playerMapMarker4.png"
+  },
+  {
+    "id": "ObjectMapMarker",
+    "file": "UI_objectMapMarker.png"
+  },
+  {
+    "id": "EnemyMapMarker",
+    "file": "UI_enemyMapMarker.png"
+  },
+  {
+    "id": "StatsParcheminLarge",
+    "file": "UI_parcheminLarge.png"
+  },
+  {
+    "id": "StatsPortrait",
+    "file": "UI_portraitFemale.png"
+  },
+  {
+    "id": "StatsSymbolAP",
+    "file": "UI_symbolAP.png"
+  },
+  {
+    "id": "StatsSymbolDF",
+    "file": "UI_symbolDF.png"
+  },
+  {
+    "id": "StatsBackButton",
+    "file": "BUT_quadBack.png"
+  },
+  {
+    "id": "SplashCredits",
+    "file": "garCoLogo.png",
+    "gamma": 0.93
+  },
+  {
+    "id": "SplashTitleScreen",
+    "file": "UI_titleScreen.png",
+    "gamma": 0.93
+  },
+  {
+    "id": "SplashIntro",
+    "file": "UI_intro.png",
+    "gamma": 0.93
+  },
+  {
+    "id": "SplashLargeButton",
+    "file": "BUT_largeBut.png"
+  },
+  {
+    "id": "SplashLargeButtonOver",
+    "file": "BUT_largeButOver.png"
+  },
+  {
+    "id": "UIMain",
+    "file": "UI_main.png"
+  },
+  {
+    "id": "UICompass",
+    "file": "UI_compass.png"
+  },
+  {
+    "id": "EnemyScratch",
+    "file": "ENM_scratch.png"
+  },
+  {
+    "id": "EnemySplat",
+    "file": "ENM_splat.png"
+  },
+  {
+    "id": "EnemyHPBar",
+    "file": "ENM_HPBar.png"
+  },
+  {
+    "id": "UISwordHit",
+    "file": "UI_swordHit.png"
+  },
+  {
+    "id": "EnemyRatSpriteSheet",
+    "file": "ENM_rat.png"
+  },
+  {
+    "id": "EnemySkeletonSpriteSheet",
+    "file": "ENM_skelly.png"
+  },
+  {
+    "id": "LootXP",
+    "file": "LOOT_XP.png"
+  },
+  {
+    "id": "InventorySelectHighlight",
+    "file": "BUT_inventoryOver.png",
+    "recolor": [
+      [
+        255,
+        222,
+        0
+      ],
+      [
+        0,
+        220,
+        255
+      ]
+    ]
+  },
+  {
+    "id": "ArrowForward",
+    "file": "BUT_forward.png"
+  },
+  {
+    "id": "ArrowBackward",
+    "file": "BUT_backwards.png"
+  },
+  {
+    "id": "ArrowLeft",
+    "file": "BUT_left.png"
+  },
+  {
+    "id": "ArrowRight",
+    "file": "BUT_right.png"
+  },
+  {
+    "id": "ArrowRotateLeft",
+    "file": "BUT_turnLeft.png"
+  },
+  {
+    "id": "ArrowRotateRight",
+    "file": "BUT_turnRight.png"
+  }
+]

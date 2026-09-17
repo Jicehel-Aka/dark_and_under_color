@@ -1,0 +1,48 @@
+name: Build AKA firmware (ESP-IDF)
+
+# Compile le vrai firmware AKA (ESP32-S3, ESP-IDF) -- contrairement a
+# la build PC/SDL, celle-ci n'a pas besoin d'une matrice Windows/Linux :
+# ESP-IDF cross-compile toujours vers la meme cible quel que soit l'OS
+# hote, donc un seul job (ubuntu-latest) suffit a la valider. Utilise
+# l'action officielle Espressif plutot qu'une installation manuelle du
+# toolchain.
+
+on:
+  push:
+    paths:
+      - 'main/**'
+      - 'components/**'
+      - 'shared/**'
+      - 'CMakeLists.txt'
+      - 'sdkconfig*'
+      - 'partitions.csv'
+      - '.github/workflows/build-aka.yml'
+  pull_request:
+    paths:
+      - 'main/**'
+      - 'components/**'
+      - 'shared/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build with ESP-IDF
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.5.1
+          target: esp32s3
+          path: '.'
+
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: darkundercolor-aka-firmware
+          path: |
+            build/darkundercolor_aka.bin
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+          if-no-files-found: warn

@@ -1,0 +1,53 @@
+[
+  {"id": "VisionBack",  "file": "dungeon_back1.png"},
+  {"id": "VisionBack2", "file": "dungeon_back2.png"},
+
+  {"id": "FarWallFront",     "file": "dungeon_frontWall3.png"},
+  {"id": "FarestWallLeft",   "file": "dungeon_leftWall4.png"},
+  {"id": "FarestWallRight",  "file": "dungeon_rightWall4.png"},
+
+  {"id": "FarWallLeft",   "file": "dungeon_leftWall3.png"},
+  {"id": "FarWallLeft2",  "file": "dungeon_leftWall3_2.png"},
+  {"id": "FarWallRight",  "file": "dungeon_rightWall3.png"},
+  {"id": "FarWallRight2", "file": "dungeon_rightWall3_2.png"},
+
+  {"id": "MidWallFront",  "file": "dungeon_frontWall2.png"},
+  {"id": "MidWallFront2", "file": "dungeon_frontWall2_2.png"},
+  {"id": "MidWallLeft",   "file": "dungeon_leftWall2.png"},
+  {"id": "MidWallLeft2",  "file": "dungeon_leftWall2_2.png"},
+  {"id": "MidWallRight",  "file": "dungeon_rightWall2.png"},
+  {"id": "MidWallRight2", "file": "dungeon_rightWall2_2.png"},
+
+  {"id": "CloseWallFront",  "file": "dungeon_frontWall1.png"},
+  {"id": "CloseWallFront2", "file": "dungeon_frontWall1_2.png"},
+  {"id": "CloseWallLeft",   "file": "dungeon_leftWall1.png"},
+  {"id": "CloseWallLeft2",  "file": "dungeon_leftWall1_2.png"},
+  {"id": "CloseWallRight",  "file": "dungeon_rightWall1.png"},
+  {"id": "CloseWallRight2", "file": "dungeon_rightWall1_2.png"},
+
+  {"id": "EnemyRatIconMed",       "file": "ENM_rat2.png"},
+  {"id": "EnemyRatIconSmall",     "file": "ENM_rat3.png"},
+  {"id": "EnemySkeletonIconMed",  "file": "ENM_skelly2.png"},
+  {"id": "EnemySkeletonIconSmall","file": "ENM_skelly3.png"},
+
+  {"id": "MinimapParchemin", "file": "UI_parchemin.png"},
+  {"id": "WallMapMarker",    "file": "UI_wallMapMarker.png"},
+  {"id": "PlayerMapMarker1", "file": "UI_playerMapMarker.png"},
+  {"id": "PlayerMapMarker2", "file": "UI_playerMapMarker2.png"},
+  {"id": "PlayerMapMarker3", "file": "UI_playerMapMarker3.png"},
+  {"id": "PlayerMapMarker4", "file": "UI_playerMapMarker4.png"},
+  {"id": "ObjectMapMarker",  "file": "UI_objectMapMarker.png"},
+  {"id": "EnemyMapMarker",   "file": "UI_enemyMapMarker.png"},
+
+  {"id": "StatsParcheminLarge", "file": "UI_parcheminLarge.png"},
+  {"id": "StatsPortrait",       "file": "UI_portraitFemale.png"},
+  {"id": "StatsSymbolAP",       "file": "UI_symbolAP.png"},
+  {"id": "StatsSymbolDF",       "file": "UI_symbolDF.png"},
+  {"id": "StatsBackButton",     "file": "BUT_quadBack.png"},
+
+  {"id": "SplashCredits",         "file": "garCoLogo.png"},
+  {"id": "SplashTitleScreen",     "file": "UI_titleScreen.png"},
+  {"id": "SplashIntro",           "file": "UI_intro.png"},
+  {"id": "SplashLargeButton",     "file": "BUT_largeBut.png"},
+  {"id": "SplashLargeButtonOver", "file": "BUT_largeButOver.png"}
+]
