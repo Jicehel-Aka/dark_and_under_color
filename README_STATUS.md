@@ -929,3 +929,22 @@ seule fois.
 
 Vérifié : YAML valide, les deux fichiers C++ renommés compilent
 toujours, aucun CMakeLists ne référençait l'ancien nom directement.
+
+## Session 27 : renommage Time.h incomplet -- Enemy.cpp oublié
+
+Retour de build (Linux ET Windows, même erreur) : `Enemy.cpp:3:10:
+fatal error: ../../platform/Time.h: No such file or directory`. Le
+renommage de `Time.h` en `PlatformTime.h` (session 26) était incomplet
+-- ma recherche de l'époque (`grep '#include "Time.h"'`) ne trouvait
+que la forme d'inclusion simple, pas la forme à chemin relatif
+utilisée par `Enemy.cpp` (`#include "../../platform/Time.h"`), donc ce
+fichier est passé au travers. Corrigé, et recherche refaite en plus
+large cette fois (`Time\.h` sans ancrage sur la syntaxe d'inclusion)
+pour confirmer qu'aucune autre référence ne traîne.
+
+Leçon retenue pour la suite : après ce genre de renommage, vérifier
+CHAQUE fichier individuellement avec les MÊMES chemins d'inclusion que
+le vrai `CMakeLists.txt`, pas seulement les fichiers trouvés par une
+recherche de texte qui peut elle-même rater des variantes de syntaxe --
+fait cette fois pour l'ensemble du projet (SDL et AKA), pas seulement
+les fichiers touchés par la correction.

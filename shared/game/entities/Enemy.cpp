@@ -1,6 +1,6 @@
 #include "Enemy.h"
 #include "../Config.h"
-#include "../../platform/Time.h"
+#include "../../platform/PlatformTime.h"
 
 namespace {
 constexpr uint32_t kActionCooldownMs = 300; // timer() dans l'original
