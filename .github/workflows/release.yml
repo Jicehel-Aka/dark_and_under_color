@@ -14,6 +14,11 @@ on:
     tags:
       - 'v*.*.*'
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Tag de version pour cette release, ex. v1.0.0'
+        required: true
+        type: string
 
 permissions:
   contents: write # necessaire pour creer la Release et y attacher les binaires
@@ -48,7 +53,7 @@ jobs:
           sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
 
       # --- Windows : SDL2/SDL2_image/SDL2_mixer via vcpkg (preinstalle
-      # sur les runners windows-latest de GitHub, VCPKG_ROOT deja defini) ---
+      # sur les runners windows-latest de GitHub) ---
       - name: Install SDL2 (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -104,18 +109,47 @@ jobs:
           Copy-Item -Recurse platform_sdl\data package\
           Copy-Item -Recurse platform_sdl\lang package\
           Copy-Item -Recurse platform_sdl\music package\
-          # DLL runtime SDL2 -- necessaires a cote de l'exe (liaison dynamique)
-          Copy-Item "$env:VCPKG_INSTALLED\bin\SDL2.dll" package\
-          Copy-Item "$env:VCPKG_INSTALLED\bin\SDL2_image.dll" package\
-          Copy-Item "$env:VCPKG_INSTALLED\bin\SDL2_mixer.dll" package\
-          # Dependances transitives des DLL ci-dessus (formats image/son) --
-          # copie tout ce qui existe dans bin/, plus simple et plus sur que
-          # de lister chaque dependance individuellement a la main.
+          # DLL runtime SDL2 et leurs dependances transitives (formats
+          # image/son) -- copie tout ce qui existe dans bin/, plus
+          # simple et plus sur que de lister chaque DLL individuellement.
           Copy-Item "$env:VCPKG_INSTALLED\bin\*.dll" package\ -Force
           Compress-Archive -Path package\* -DestinationPath darkandundercolor-${{ matrix.name }}.zip
 
+      # BUG TROUVE ET CORRIGE (fiabilite, signale par Jicehel) : l'upload
+      # vers la Release se faisait auparavant directement ICI, dans
+      # CHAQUE job de la matrice -- les deux jobs (Windows et Linux)
+      # tentaient de creer/modifier la MEME Release en meme temps,
+      # risque de course. Chaque job depose maintenant juste son zip en
+      # artefact de workflow ; un job "release" separe (ci-dessous),
+      # qui attend que LES DEUX aient fini, telecharge les deux et cree
+      # la Release une seule fois.
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: darkandundercolor-${{ matrix.name }}
+          path: darkandundercolor-${{ matrix.name }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      # BUG TROUVE ET CORRIGE (signale par Jicehel, log de build a
+      # l'appui) : softprops/action-gh-release exige un tag -- un
+      # declenchement manuel (workflow_dispatch) n'en fournit pas via
+      # github.ref_name (qui vaut le nom de la BRANCHE dans ce cas, pas
+      # un tag). "inputs.release_tag" (saisi a la main lors du
+      # declenchement manuel) prend le relais dans ce cas ; sur un vrai
+      # push de tag, github.ref_name est deja correct.
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: darkandundercolor-${{ matrix.name }}.zip
+          tag_name: ${{ inputs.release_tag || github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          files: artifacts/*.zip
           generate_release_notes: true

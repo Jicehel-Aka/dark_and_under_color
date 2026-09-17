@@ -27,7 +27,7 @@ bool SdlInput::justPressed( bool InputState::*button ) const {
     return ( current.*button ) && !( previous.*button );
 }
 
-#include "Time.h"
+#include "PlatformTime.h"
 uint32_t platformMillis() {
     return SDL_GetTicks();
 }

@@ -899,3 +899,33 @@ une seconde fois au lieu de réutiliser `CMAKE_TOOLCHAIN_FILE` déjà posé
 par l'étape d'installation (comme le fait déjà `build-pc.yml`).
 
 Vérifié : YAML valide sur les deux fichiers modifiés.
+
+## Session 26 : collision Time.h/time.h sur Windows + release.yml restructuré
+
+**Build Windows échouait sur `SdlTranslator.cpp`
+("'clock_t' is not a member of global namespace").** Diagnostic fourni
+par Jicehel, vérifié en cherchant le fichier réel avant d'appliquer --
+confirmé : `shared/platform/Time.h` existait bien. Sur Linux/macOS
+(sensibles à la casse), aucun souci ; sur Windows/NTFS (insensible à la
+casse), `Time.h` et `time.h` sont LE MÊME FICHIER -- ce header
+personnel écrasait le vrai `<time.h>` du CRT MSVC dès qu'un header
+standard (`<ctime>`, inclus via `SdlTranslator.cpp`) tentait de
+l'inclure. Renommé en `PlatformTime.h`, les deux fichiers qui
+l'incluaient (`AkaInput.cpp`, `SdlInput.cpp`) mis à jour.
+
+**`release.yml` échouait sur un déclenchement manuel** ("GitHub
+Releases requires a tag") -- `workflow_dispatch` sans tag ne fournit
+rien à `github.ref_name`. Ajouté un input `release_tag` obligatoire
+pour les déclenchements manuels, utilisé en repli
+(`inputs.release_tag || github.ref_name`).
+
+**Amélioration de fiabilité appliquée au passage** (signalée par
+Jicehel, pas juste le correctif minimal) : les deux jobs de la matrice
+(Windows/Linux) tentaient chacun de créer/modifier la MÊME Release
+GitHub en même temps -- risque de course. Restructuré : chaque job de
+build dépose son zip en artefact de workflow, un job `release` séparé
+(`needs: build`) télécharge les deux artefacts et crée la Release une
+seule fois.
+
+Vérifié : YAML valide, les deux fichiers C++ renommés compilent
+toujours, aucun CMakeLists ne référençait l'ancien nom directement.

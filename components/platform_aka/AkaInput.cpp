@@ -22,7 +22,7 @@ bool AkaInput::justPressed( bool InputState::*button ) const {
     return ( current.*button ) && !( previous.*button );
 }
 
-#include "Time.h"
+#include "PlatformTime.h"
 #include "esp_timer.h"
 uint32_t platformMillis() {
     return (uint32_t)( esp_timer_get_time() / 1000 );
