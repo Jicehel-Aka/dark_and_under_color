@@ -81,7 +81,7 @@ jobs:
       - name: Configure (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: cmake -S platform_sdl -B build -DCMAKE_TOOLCHAIN_FILE="$env:CMAKE_TOOLCHAIN_FILE" -A x64
+        run: cmake -S platform_sdl -B build -DCMAKE_TOOLCHAIN_FILE="$env:CMAKE_TOOLCHAIN_FILE" -DVCPKG_TARGET_TRIPLET=x64-windows -A x64
 
       - name: Build
         run: cmake --build build --config Release

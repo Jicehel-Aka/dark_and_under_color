@@ -38,4 +38,36 @@ target_include_directories(darkandundercolor_pc PRIVATE
     .
 )
 
-target_link_libraries(darkandundercolor_pc PRIVATE ${SDL2_LIBRARIES} SDL2_image SDL2_mixer)
+# BUG TROUVE ET CORRIGE (retour de Jicehel, log de lien Windows a
+# l'appui -- "LNK1181: cannot open input file 'SDL2_image.lib'") : les
+# noms bruts (SDL2_image, SDL2_mixer) marchaient sur Linux PAR
+# COINCIDENCE -- CMake, ne les reconnaissant pas comme des cibles,
+# retombe sur la convention "-lSDL2_image" du lieur Linux, qui trouve
+# la bibliotheque via les chemins systeme standards. Windows/MSVC n'a
+# pas cette convention : il lui faut soit un fichier .lib exact dans
+# son chemin de recherche, soit la vraie cible CMake exportee par
+# vcpkg (qui, elle, sait ou se trouve precisement ce .lib). Utilise
+# les cibles modernes (SDL2::SDL2, etc.) quand elles existent
+# (garanti par vcpkg sous Windows), sinon retombe sur l'ancienne
+# methode par variables (qui fonctionnait deja sous Linux -- pas de
+# risque de regression la ou ca marchait).
+if ( TARGET SDL2_image::SDL2_image )
+    set( SDL2_IMAGE_LINK_TARGET SDL2_image::SDL2_image )
+else()
+    set( SDL2_IMAGE_LINK_TARGET SDL2_image )
+endif()
+
+if ( TARGET SDL2_mixer::SDL2_mixer )
+    set( SDL2_MIXER_LINK_TARGET SDL2_mixer::SDL2_mixer )
+else()
+    set( SDL2_MIXER_LINK_TARGET SDL2_mixer )
+endif()
+
+if ( TARGET SDL2::SDL2 )
+    target_link_libraries(darkandundercolor_pc PRIVATE SDL2::SDL2 ${SDL2_IMAGE_LINK_TARGET} ${SDL2_MIXER_LINK_TARGET})
+    if ( TARGET SDL2::SDL2main )
+        target_link_libraries(darkandundercolor_pc PRIVATE SDL2::SDL2main)
+    endif()
+else()
+    target_link_libraries(darkandundercolor_pc PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LINK_TARGET} ${SDL2_MIXER_LINK_TARGET})
+endif()

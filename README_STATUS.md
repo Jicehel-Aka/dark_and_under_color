@@ -948,3 +948,33 @@ le vrai `CMakeLists.txt`, pas seulement les fichiers trouvés par une
 recherche de texte qui peut elle-même rater des variantes de syntaxe --
 fait cette fois pour l'ensemble du projet (SDL et AKA), pas seulement
 les fichiers touchés par la correction.
+
+## Session 28 : échec de lien Windows -- SDL2_image.lib introuvable
+
+Diagnostic vérifié contre le vrai `CMakeLists.txt` avant application :
+confirmé. `target_link_libraries` utilisait les noms bruts (`SDL2_image`,
+`SDL2_mixer`) au lieu des cibles CMake exportées par vcpkg. Ça
+fonctionnait sur Linux par coïncidence -- CMake, ne reconnaissant pas
+ces noms comme des cibles, retombe sur la convention `-lSDL2_image` du
+lieur Linux, qui trouve la bibliothèque via les chemins système
+standards. Windows/MSVC n'a pas cette convention : il lui faut soit un
+`.lib` exact dans son chemin de recherche, soit la vraie cible CMake
+qui sait précisément où vcpkg l'a installé.
+
+**Corrigé avec prudence, pas juste le correctif proposé tel quel** :
+forcer `find_package(... CONFIG REQUIRED)` partout risquait de casser
+Linux si le paquet `apt` de la plateforme utilisée par `ubuntu-latest`
+ne fournit pas de fichier de config CMake (pas garanti selon la
+version) -- CONFIG est strict, pas de repli automatique vers le mode
+Module comme le fait `find_package` normal. Le `CMakeLists.txt` détecte
+maintenant si les cibles modernes existent (`SDL2::SDL2`,
+`SDL2_image::SDL2_image`, etc. -- garanti côté vcpkg/Windows) et les
+utilise si oui, sinon retombe sur l'ancienne méthode par variables (qui
+fonctionnait déjà sous Linux) -- aucun risque de régression là où ça
+marchait déjà. `VCPKG_TARGET_TRIPLET=x64-windows` ajouté à l'étape
+Configure des deux workflows concernés (`build-pc.yml`, `release.yml`)
+pour la cohérence de triplet suggérée.
+
+Pas de `cmake` disponible dans ce bac à sable pour tester réellement la
+configuration -- relu attentivement la syntaxe (if/else/endif
+équilibrés), mais le premier vrai test reste côté Jicehel.
