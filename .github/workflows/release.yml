@@ -54,7 +54,20 @@ jobs:
         shell: pwsh
         run: |
           vcpkg install sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows
-          echo "VCPKG_INSTALLED=$env:VCPKG_ROOT/installed/x64-windows" >> $env:GITHUB_ENV
+
+          # BUG TROUVE ET CORRIGE (meme cause que build-pc.yml, voir ce
+          # fichier pour le contexte complet) : $env:VCPKG_ROOT vide sur
+          # ce runner -- resolu via l'executable vcpkg reel plutot que
+          # de compter sur la variable d'environnement.
+          $vcpkgExe = (Get-Command vcpkg -ErrorAction Stop).Source
+          $vcpkgRoot = Split-Path -Parent $vcpkgExe
+          $toolchain = Join-Path $vcpkgRoot 'scripts\buildsystems\vcpkg.cmake'
+          if (-not (Test-Path $toolchain)) {
+            throw "Fichier toolchain vcpkg introuvable : $toolchain"
+          }
+          "VCPKG_ROOT=$vcpkgRoot" >> $env:GITHUB_ENV
+          "VCPKG_INSTALLED=$vcpkgRoot\installed\x64-windows" >> $env:GITHUB_ENV
+          "CMAKE_TOOLCHAIN_FILE=$toolchain" >> $env:GITHUB_ENV
 
       - name: Configure (Linux)
         if: runner.os == 'Linux'
@@ -63,7 +76,7 @@ jobs:
       - name: Configure (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: cmake -S platform_sdl -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -A x64
+        run: cmake -S platform_sdl -B build -DCMAKE_TOOLCHAIN_FILE="$env:CMAKE_TOOLCHAIN_FILE" -A x64
 
       - name: Build
         run: cmake --build build --config Release

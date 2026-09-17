@@ -880,3 +880,22 @@ encore suivis.
 Vérifié : YAML valide sur les trois workflows, aucun `build/` présent
 dans cette copie de travail (confirmant que le problème venait bien du
 dépôt local de Jicehel, pas d'un oubli de ma part).
+
+## Session 25 : VCPKG_ROOT vide sur le runner Windows (build-pc.yml)
+
+Même schéma que la session précédente : diagnostic + correctif déjà
+rédigés fournis par Jicehel, vérifiés contre le log avant application.
+Le message d'erreur (`/scripts/buildsystems/vcpkg.cmake`, rien avant le
+"/") confirme exactement le diagnostic : `$env:VCPKG_ROOT` était vide
+au moment de construire ce chemin -- pas garanti défini sur tous les
+runners `windows-latest` malgré vcpkg lui-même bien présent.
+
+**Corrigé dans `build-pc.yml` ET `release.yml`** (même construction de
+chemin dans les deux) : résolution de l'emplacement réel de vcpkg via
+`Get-Command vcpkg` (retrouve l'exécutable effectivement sur le PATH)
+plutôt que de dépendre d'une variable d'environnement. `release.yml`
+simplifié au passage : l'étape Configure reconstruisait le même chemin
+une seconde fois au lieu de réutiliser `CMAKE_TOOLCHAIN_FILE` déjà posé
+par l'étape d'installation (comme le fait déjà `build-pc.yml`).
+
+Vérifié : YAML valide sur les deux fichiers modifiés.

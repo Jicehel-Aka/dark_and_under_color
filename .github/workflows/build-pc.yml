@@ -52,7 +52,23 @@ jobs:
         shell: pwsh
         run: |
           vcpkg install sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows
-          echo "CMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" >> $env:GITHUB_ENV
+
+          # BUG TROUVE ET CORRIGE (retour de Jicehel, log a l'appui) :
+          # $env:VCPKG_ROOT etait vide sur ce runner -- le chemin
+          # construit devenait juste "/scripts/buildsystems/vcpkg.cmake"
+          # (rien avant le "/"), introuvable. Corrige en retrouvant
+          # l'executable vcpkg reel via Get-Command plutot que de
+          # compter sur une variable d'environnement pas garantie
+          # definie sur tous les runners.
+          $vcpkgExe = (Get-Command vcpkg -ErrorAction Stop).Source
+          $vcpkgRoot = Split-Path -Parent $vcpkgExe
+          $toolchain = Join-Path $vcpkgRoot 'scripts\buildsystems\vcpkg.cmake'
+          if (-not (Test-Path $toolchain)) {
+            throw "Fichier toolchain vcpkg introuvable : $toolchain"
+          }
+          "VCPKG_ROOT=$vcpkgRoot" >> $env:GITHUB_ENV
+          "VCPKG_INSTALLED=$vcpkgRoot\installed\x64-windows" >> $env:GITHUB_ENV
+          "CMAKE_TOOLCHAIN_FILE=$toolchain" >> $env:GITHUB_ENV
 
       - name: Configure (Linux)
         if: runner.os == 'Linux'
