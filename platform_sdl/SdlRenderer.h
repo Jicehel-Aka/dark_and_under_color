@@ -34,6 +34,16 @@ class SdlRenderer : public IRenderer {
 
     bool ok() const { return window != nullptr && renderer != nullptr; }
 
+    // BUG TROUVE ET CORRIGE (musique OK mais ecran noir, signale par
+    // Jicehel) : un echec de chargement d'assets ne produisait qu'un
+    // message dans stderr, invisible sur un exe lance en double-clic
+    // (pas de console attachee). Verifie qu'un asset connu se charge
+    // bien AU DEMARRAGE et affiche une VRAIE fenetre d'erreur (visible
+    // meme sans console) sinon, avec le chemin exact tente -- le joueur
+    // voit directement pourquoi, plutot que de deviner face a un ecran
+    // noir muet.
+    bool verifyAssetsLoadable();
+
   private:
     SDL_Texture* getTexture( ImageId image );
 

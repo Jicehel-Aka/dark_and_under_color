@@ -978,3 +978,45 @@ pour la cohérence de triplet suggérée.
 Pas de `cmake` disponible dans ce bac à sable pour tester réellement la
 configuration -- relu attentivement la syntaxe (if/else/endif
 équilibrés), mais le premier vrai test reste côté Jicehel.
+
+## Session 29 : écran noir côté PC (SDL) -- la vraie cause, pas un souci de chemin
+
+Jicehel rapporte : musique OK, écran noir. Analyse en deux temps.
+
+**Vraie cause trouvee (majeure)** : `platform_sdl/Assets.cpp` (la table
+qui associe chaque `ImageId` a son nom de fichier PNG pour le
+chargement a chaud) n'avait JAMAIS ete tenue a jour en parallele de son
+equivalent AKA -- seulement les 12 toutes premieres entrees (les
+objets, ajoutees tout au debut du portage), alors que 71 assets
+existent desormais (`UIMain`, tous les murs du couloir, les ecrans
+Splash...). Chaque ajout d'asset au fil des ~20 sessions suivantes
+n'a mis a jour que le cote AKA (`tools/all_assets_config.json` ->
+`GeneratedAssets.cpp`), jamais le cote SDL en parallele -- derive
+totale non detectee jusqu'ici, faute d'avoir teste la build SDL en
+conditions reelles avant cette session.
+
+**Corrige a la racine, pas juste rattrape une fois** : `convert_assets.py`
+genere maintenant `platform_sdl/Assets.cpp` EN MEME TEMPS que
+`GeneratedAssets.cpp`, depuis la MEME configuration -- les deux
+fichiers ne peuvent plus deriver l'un de l'autre a l'avenir, un seul
+endroit a maintenir. Bug trouve en l'implementant : mauvais calcul de
+chemin de sortie (base sur le chemin de sortie AKA fourni en argument
+plutot que sur l'emplacement du script lui-meme) -- corrige avant
+regeneration.
+
+**Amelioration de diagnostic ajoutee en plus** (pour toute cause
+similaire a l'avenir) : les chemins `data/`/`lang/`/`music/` sont
+maintenant resolus par rapport a l'emplacement REEL de l'executable
+(`GetModuleFileNameA` sous Windows, `/proc/self/exe` sous Linux) plutot
+que par rapport au dossier de travail courant, qui ne correspond pas
+toujours au dossier de l'executable selon comment il est lance.
+`SdlRenderer::verifyAssetsLoadable()` verifie au demarrage qu'un asset
+connu se charge, et affiche une VRAIE fenetre d'erreur visible
+(`SDL_ShowSimpleMessageBox`) sinon -- l'ancien message d'erreur partait
+dans `stderr`, invisible sur un exe lance en double-clic (pas de
+console attachee).
+
+Verifie : les 71 entrees sont bien presentes des deux cotes apres
+regeneration (confirme par recherche directe de `UIMain`/`VisionBack`
+dans le fichier SDL genere), compilation complete des fichiers
+modifies.

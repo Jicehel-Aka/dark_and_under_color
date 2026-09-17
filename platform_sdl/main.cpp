@@ -8,19 +8,64 @@
 #include "levels/Level.h"
 
 #include <SDL2/SDL_mixer.h>
+#include <string>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#include <limits.h>
+#endif
+
+namespace {
+// BUG TROUVE ET CORRIGE (retour de Jicehel : musique OK mais ecran
+// noir -- data/ contient ~105 fichiers contre 1 seul pour music/, piste
+// probable : chemin trop long ou extraction partielle sous Windows) :
+// les chemins ("data", "lang/...", "music/...") etaient relatifs au
+// DOSSIER DE TRAVAIL COURANT au lancement, qui ne correspond pas
+// toujours au dossier de l'executable selon comment il est demarre
+// (double-clic Explorer, raccourci, autre lanceur...). Resolu
+// desormais par rapport a l'emplacement REEL de l'executable
+// (GetModuleFileNameA sous Windows, /proc/self/exe sous Linux) --
+// fiable quel que soit le repertoire de travail au demarrage.
+std::string exeDirectory() {
+#ifdef _WIN32
+    char buf[MAX_PATH];
+    DWORD len = GetModuleFileNameA( nullptr, buf, MAX_PATH );
+    std::string path( buf, len );
+    size_t pos = path.find_last_of( "\\/" );
+    return ( pos == std::string::npos ) ? "." : path.substr( 0, pos );
+#else
+    char buf[PATH_MAX];
+    ssize_t len = readlink( "/proc/self/exe", buf, sizeof( buf ) - 1 );
+    if ( len <= 0 ) return ".";
+    buf[len] = '\0';
+    std::string path( buf );
+    size_t pos = path.find_last_of( '/' );
+    return ( pos == std::string::npos ) ? "." : path.substr( 0, pos );
+#endif
+}
+}
 
 int main( int argc, char** argv ) {
     constexpr int kWindowW = 150 * 2;
     constexpr int kWindowH = 81 * 2;
 
-    SdlRenderer renderer( kWindowW, kWindowH, "data" );
+    const std::string baseDir = exeDirectory();
+
+    SdlRenderer renderer( kWindowW, kWindowH, baseDir + "/data" );
     if ( !renderer.ok() ) return 1;
+    // Verification immediate et VISIBLE (pas juste un message dans une
+    // console qui n'existe pas quand on double-clique l'exe) : si le
+    // premier asset ne charge pas, le joueur voit exactement pourquoi
+    // au lieu d'un ecran noir muet.
+    if ( !renderer.verifyAssetsLoadable() ) return 1;
 
     SdlInput input;
     // Langue fixee au francais pour cette build de test -- pas de menu
     // systeme AKA ici pour la changer a la volee. Remplacer "fr" par
     // "en" pour tester l'autre langue disponible.
-    SdlTranslator translator( "lang/aka_common_fr.json", "lang/fr.json" );
+    SdlTranslator translator( baseDir + "/lang/aka_common_fr.json", baseDir + "/lang/fr.json" );
     GameApp app( kLevel00, translator );
 
     // Musique -- meme fichier .wav que la build AKA (converti depuis le
@@ -32,7 +77,7 @@ int main( int argc, char** argv ) {
     // option). Musique desactivee (pas bloquante) si Mix_OpenAudio()
     // echoue -- ex. pas de peripherique son disponible en CI/tests.
     bool audioOk = ( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 1, 2048 ) == 0 );
-    Mix_Music* music = audioOk ? Mix_LoadMUS( "music/level_loop.wav" ) : nullptr;
+    Mix_Music* music = audioOk ? Mix_LoadMUS( ( baseDir + "/music/level_loop.wav" ).c_str() ) : nullptr;
     if ( music ) Mix_PlayMusic( music, -1 );
 
     bool running = true;

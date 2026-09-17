@@ -16,7 +16,7 @@ Usage :
 
 config.json : liste de {"id": "NomImageAsset", "file": "fichier.png"}
 """
-import sys, json
+import sys, json, os
 from PIL import Image, ImageEnhance
 
 TRANSPARENT_KEY = 0xF81F  # magenta pur (R=31,G=0,B=31) -- symetrique R/B, donc valide dans les deux ordres de bits
@@ -148,6 +148,39 @@ def main():
         f.write("\n".join(lines) + "\n")
 
     print(f"OK : {len(entries)} images converties, {total_bytes} octets ({total_bytes/1024:.1f} Ko) dans {out_path}")
+
+    # BUG TROUVE ET CORRIGE (ecran noir cote SDL, musique OK -- signale
+    # par Jicehel) : platform_sdl/Assets.cpp (la table ImageId -> nom de
+    # fichier PNG pour le chargement a chaud) n'avait jamais ete tenue a
+    # jour en parallele de celle-ci -- seulement les 12 toutes premieres
+    # entrees (les objets, du tout debut du portage), alors que 71
+    # assets existent desormais (UIMain, les murs, les ecrans Splash...).
+    # Generee desormais depuis la MEME config a chaque conversion,
+    # plutot que maintenue a la main en double -- ne peut plus deriver.
+    sdl_lines = []
+    sdl_lines.append("// Assets.cpp — GENERE AUTOMATIQUEMENT par tools/convert_assets.py")
+    sdl_lines.append("// (meme config que components/platform_aka/GeneratedAssets.cpp --")
+    sdl_lines.append("// ne plus editer a la main, les deux fichiers derivaient l'un de")
+    sdl_lines.append("// l'autre auparavant, cause d'un ecran noir cote SDL).")
+    sdl_lines.append('#include "Assets.h"')
+    sdl_lines.append('#include "AssetIds.h"')
+    sdl_lines.append("")
+    sdl_lines.append("const char* assetFileName( ImageId id ) {")
+    sdl_lines.append("    switch ( static_cast<ImageAsset>( id ) ) {")
+    for entry in entries:
+        sdl_lines.append(f'        case ImageAsset::{entry["id"]}: return "{entry["file"]}";')
+    sdl_lines.append("        default: return nullptr;")
+    sdl_lines.append("    }")
+    sdl_lines.append("}")
+
+    sdl_out_path = os.path.join( os.path.dirname( os.path.abspath( __file__ ) ), "..", "platform_sdl", "Assets.cpp" )
+    sdl_out_path = os.path.normpath( sdl_out_path )
+    if not os.path.isdir( os.path.dirname( sdl_out_path ) ):
+        sdl_out_path = None
+    if sdl_out_path:
+        with open( sdl_out_path, "w", encoding="utf-8" ) as f:
+            f.write( "\n".join( sdl_lines ) + "\n" )
+        print(f"OK : table SDL regeneree en parallele dans {sdl_out_path}")
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,6 @@
 #include "SdlRenderer.h"
 #include "Assets.h"
+#include "AssetIds.h"
 #include <SDL2/SDL_image.h>
 #include <cstdio>
 
@@ -129,4 +130,18 @@ void SdlRenderer::getImageSize( ImageId image, int16_t& outW, int16_t& outH ) co
 
 void SdlRenderer::present() {
     SDL_RenderPresent( renderer );
+}
+
+bool SdlRenderer::verifyAssetsLoadable() {
+    // ObjPotionIcon (le tout premier asset de l'enum, voir AssetIds.h) --
+    // fait partie des 12 tout premiers assets ajoutes au tout debut du
+    // portage, garanti present quel que soit l'etat du reste de la
+    // table -- si celui-la charge, le dossier data/ est bon.
+    SDL_Texture* tex = getTexture( (ImageId)ImageAsset::ObjPotionIcon );
+    if ( tex != nullptr ) return true;
+
+    std::string msg = "Impossible de charger les images du jeu depuis :\n" + assetDir +
+        "\n\nVerifie que le dossier \"data\" se trouve bien a cote de l'executable.";
+    SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Dark & Under (couleur) -- assets introuvables", msg.c_str(), window );
+    return false;
 }
