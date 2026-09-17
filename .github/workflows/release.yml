@@ -1,0 +1,108 @@
+name: Release PC binaries (Windows + Linux)
+
+# Produit des binaires PRETS A TELECHARGER (pas juste des artefacts de
+# CI temporaires) pour la build PC/SDL, attaches a une Release GitHub.
+# Se declenche sur un tag de version (v1.0.0, v1.2.3, ...) ou
+# manuellement (bouton "Run workflow").
+#
+# Complementaire de build-pc.yml (verification a chaque push/PR, sans
+# release) -- celui-ci sert specifiquement a publier des binaires
+# distribuables.
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write # necessaire pour creer la Release et y attacher les binaires
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux-x64
+          - os: windows-latest
+            name: windows-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Meme precaution que build-aka.yml (voir ce fichier pour le
+      # contexte complet).
+      - name: Remove stale build cache
+        shell: bash
+        run: rm -rf build
+
+      # --- Linux : SDL2/SDL2_image/SDL2_mixer via apt ---
+      - name: Install SDL2 (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
+
+      # --- Windows : SDL2/SDL2_image/SDL2_mixer via vcpkg (preinstalle
+      # sur les runners windows-latest de GitHub, VCPKG_ROOT deja defini) ---
+      - name: Install SDL2 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          vcpkg install sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows
+          echo "VCPKG_INSTALLED=$env:VCPKG_ROOT/installed/x64-windows" >> $env:GITHUB_ENV
+
+      - name: Configure (Linux)
+        if: runner.os == 'Linux'
+        run: cmake -S platform_sdl -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: cmake -S platform_sdl -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -A x64
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      # --- Assemble le paquet a publier : executable + ressources
+      # d'execution (data/lang/music) + DLL SDL2 sur Windows (liaison
+      # dynamique, sinon l'exe ne demarre pas chez quelqu'un qui n'a pas
+      # SDL2 installe) ---
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p package
+          cp build/darkandundercolor_pc package/
+          cp -r platform_sdl/data package/
+          cp -r platform_sdl/lang package/
+          cp -r platform_sdl/music package/
+          cd package && zip -r ../darkandundercolor-${{ matrix.name }}.zip . && cd ..
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          mkdir package
+          Copy-Item build\Release\darkandundercolor_pc.exe package\
+          Copy-Item -Recurse platform_sdl\data package\
+          Copy-Item -Recurse platform_sdl\lang package\
+          Copy-Item -Recurse platform_sdl\music package\
+          # DLL runtime SDL2 -- necessaires a cote de l'exe (liaison dynamique)
+          Copy-Item "$env:VCPKG_INSTALLED\bin\SDL2.dll" package\
+          Copy-Item "$env:VCPKG_INSTALLED\bin\SDL2_image.dll" package\
+          Copy-Item "$env:VCPKG_INSTALLED\bin\SDL2_mixer.dll" package\
+          # Dependances transitives des DLL ci-dessus (formats image/son) --
+          # copie tout ce qui existe dans bin/, plus simple et plus sur que
+          # de lister chaque dependance individuellement a la main.
+          Copy-Item "$env:VCPKG_INSTALLED\bin\*.dll" package\ -Force
+          Compress-Archive -Path package\* -DestinationPath darkandundercolor-${{ matrix.name }}.zip
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: darkandundercolor-${{ matrix.name }}.zip
+          generate_release_notes: true

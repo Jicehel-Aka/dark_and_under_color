@@ -1,0 +1,6 @@
+# Dossiers de build generes -- ne jamais les committer : ils contiennent
+# des chemins absolus fige a la generation (CMakeCache.txt), incompatibles
+# d'une machine a l'autre (voir le bug de build-aka.yml sur GitHub Actions,
+# cause par un build/ Windows committe par erreur).
+build/
+sdkconfig.old

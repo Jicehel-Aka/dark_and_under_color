@@ -307,11 +307,21 @@ void GameApp::render( IRenderer& renderer ) {
     // parchemin -- l'original le centre bien sur 50*multi, soit le
     // milieu du canevas 150 de large, panneau de droite inclus).
     const char* desc = descriptionKey();
-    // BUG TROUVE ET CORRIGE (2e passe, mesures precises de Jicehel) :
-    // premiere estimation (x=100, y=144) encore fausse -- decalee de
-    // 42px vers la gauche (7 caracteres x 6px, police Narrow) et 2px
-    // vers le bas.
-    renderer.drawText( 50 * 2 - 42, 78 * 2 - 10, desc, RGBColor{ 0xff, 0xff, 0xff }, FontSize::Narrow );
+    // BUG TROUVE ET CORRIGE (3e passe) : erreur de fond identifiee par
+    // Jicehel -- ce n'est pas une position fixe avec un decalage
+    // constant, c'est une ZONE DE TEXTE INDEPENDANTE (~21 caracteres,
+    // distincte du parchemin, avec son propre centre) dans laquelle
+    // chaque message doit etre CENTRE individuellement, pas decale
+    // globalement par une constante qui n'etait juste que par hasard a
+    // peu pres bonne pour "UNDERGROUND LAIR" et fausse pour tout le
+    // reste. Centre de zone (96, en unites doublees) calibre a partir
+    // de la mesure precise de Jicehel sur "UNDERGROUND LAIR" (16
+    // caracteres) plutot que devine.
+    constexpr int16_t kBottomZoneCenterX = 96;
+    constexpr int16_t kBottomTextCharWidthPx = 6; // police Narrow
+    int16_t descTextWidth = (int16_t)( strlen( desc ) * kBottomTextCharWidthPx );
+    int16_t descX = (int16_t)( kBottomZoneCenterX - descTextWidth / 2 );
+    renderer.drawText( descX, 78 * 2 - 9, desc, RGBColor{ 0xff, 0xff, 0xff }, FontSize::Narrow );
 
     renderer.present();
 }

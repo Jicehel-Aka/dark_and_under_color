@@ -789,3 +789,94 @@ corrigé avant régénération.
 
 Tout revérifié après coup : syntaxe complète, régénération des 71
 assets sans erreur.
+
+## Session 21 : workflow de release (binaires Windows/Linux téléchargeables)
+
+Ajouté `.github/workflows/release.yml`, distinct de `build-pc.yml`
+(celui-là valide juste que ça compile a chaque push, sans rien
+publier) : se déclenche sur un tag de version (`v1.0.0` etc.) ou
+manuellement, construit la build PC/SDL sur Windows ET Linux, empaquete
+l'exécutable avec ses ressources d'exécution (`data/`, `lang/`,
+`music/`) et, côté Windows, les DLL SDL2 nécessaires (liaison
+dynamique -- sans elles l'exe ne démarre pas chez quelqu'un qui n'a pas
+SDL2 installé), puis attache les deux zips a une Release GitHub créée
+automatiquement (`softprops/action-gh-release`).
+
+Vérifié comme YAML valide, pas encore déclenché réellement sur GitHub
+(nécessite un tag poussé ou un déclenchement manuel côté Jicehel pour
+confirmer que l'assemblage des DLL fonctionne bien en pratique).
+
+## Session 22 : deux zones de texte indépendantes, pas un décalage global
+
+Jicehel a clarifié l'architecture réelle : la bande du bas est une
+ZONE DE TEXTE INDÉPENDANTE (~21 caractères), distincte du parchemin,
+avec son propre centre -- le texte y est CENTRÉ, pas positionné à un
+point fixe avec un décalage constant comme je l'avais implémenté.
+Cause de l'erreur précédente : "UNDERGROUND LAIR" (16 caractères)
+tombait par coïncidence presque juste avec un décalage fixe, ce qui
+masquait le vrai problème -- tout autre message de longueur différente
+aurait été mal placé.
+
+**Corrigé** : centrage réel calculé par message
+(`kBottomZoneCenterX - strlen(texte)*6/2`), centre de zone (96, unités
+doublées) calibré directement à partir de la mesure précise de Jicehel
+sur "UNDERGROUND LAIR" ("10px trop à droite, 1px trop haut" par rapport
+à la position précédente) plutôt que deviné.
+
+**Parchemin de dialogue -- sur-correction annulée.** La session
+précédente avait appliqué la MÊME logique de décalage global au
+parchemin, en supposant à tort une cause commune avec la bande du bas.
+Jicehel confirme que cette zone était déjà correcte (centrage par
+message déjà en place et fonctionnel), à part "Continuez"
+spécifiquement -- `kParchmentCenterX` revenu à 105 (valeur d'avant la
+sur-correction). Pas de nouvelle tentative de deviner l'ajustement fin
+pour "Continuez" seul -- en attente d'une mesure aussi précise que
+celle donnée pour la bande du bas avant de retoucher.
+
+Tout revérifié après coup : syntaxe complète.
+
+## Session 23 : ajustement ciblé pour "Continuez"
+
+Jicehel confirme le principe déjà en place (centrage réel par nombre
+de caractères x largeur de police, pas une position fixe) et donne une
+estimation "à la louche" de ~20px pour le décalage restant de
+"Continuez" spécifiquement.
+
+Vérifié : le mécanisme de centrage (`centeredX()`, même police Wide,
+même formule) ne présente pas d'incohérence de code identifiable par
+rapport aux autres textes de l'écran de victoire (qui utilisent
+exactement le même appel) -- pas d'explication solide trouvée pour un
+décalage propre à cette seule chaîne. Ajustement isolé de 20px vers la
+gauche appliqué directement a ce texte specifique (pas au calcul
+général, qui semble correct pour le reste de l'écran) plutôt que
+d'inventer une théorie non vérifiée.
+
+Vérifié après coup : syntaxe complète.
+
+## Session 24 : cache CMake périmé committé par erreur (build-aka.yml échouait)
+
+Jicehel a fourni le log d'échec ET un diagnostic déjà rédigé (par un
+tiers) -- vérifié contre le log avant d'appliquer : diagnostic correct.
+Un dossier `build/` généré localement sur Windows (`CMakeCache.txt`
+fige en dur le chemin absolu source/binaire de sa génération, ici
+`C:/Users/jean_/OneDrive/.../dark_and_under_color_aka`) avait été
+commis dans le dépôt -- le runner Linux de GitHub Actions, avec un
+chemin de projet totalement différent, refuse de le réutiliser
+("Build directory ... configured for project ... not ...").
+
+**Corrigé dans les TROIS workflows** (pas seulement `build-aka.yml` --
+`build-pc.yml` et `release.yml` utilisent aussi CMake et auraient le
+même problème si un `build/` local y était un jour commis par erreur) :
+`rm -rf build` avant chaque configuration, plutôt que de compter sur
+`idf.py fullclean` (le cache pointe vers un chemin qui n'existe même
+pas sur le runner -- fullclean ne suffit pas forcément).
+
+**`.gitignore` ajouté** (`build/`, `sdkconfig.old`) pour empêcher que
+ça se reproduise. Si `build/` est déjà suivi dans le dépôt de Jicehel,
+il devra le retirer une fois avec `git rm -r --cached build` avant son
+prochain commit -- le `.gitignore` seul n'affecte que les fichiers pas
+encore suivis.
+
+Vérifié : YAML valide sur les trois workflows, aucun `build/` présent
+dans cette copie de travail (confirmant que le problème venait bien du
+dépôt local de Jicehel, pas d'un oubli de ma part).

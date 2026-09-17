@@ -30,6 +30,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Meme precaution que build-aka.yml (voir ce fichier pour le
+      # contexte complet) : un dossier build/ commis par erreur depuis
+      # une machine locale casserait la configuration CMake ici aussi.
+      - name: Remove stale build cache
+        shell: bash
+        run: rm -rf build
+
       # --- Linux : SDL2/SDL2_image/SDL2_mixer via apt ---
       - name: Install SDL2 (Linux)
         if: runner.os == 'Linux'

@@ -14,7 +14,7 @@ namespace {
 // sur les cotes) a toujours ete cense laisser voir le panneau de droite
 // du dessous. Cette couche manquante donnait l'impression d'un
 // parchemin trop petit ; corrige au bon endroit (GameApp), pas ici.
-constexpr int16_t kParchmentCenterX = 65; // decale de ~40px vers la gauche par rapport a la valeur precedente (105) -- meme biais que la bande du bas (voir GameApp.cpp), extrapole ici faute de mesure precise separee pour cet ecran ; a affiner si encore decale
+constexpr int16_t kParchmentCenterX = 105; // REVENU a cette valeur -- la correction precedente (65) partait d'une fausse generalisation (meme cause que la bande du bas) ; Jicehel confirme que cette zone etait deja correcte a part "Continuez" specifiquement, pas un decalage global a appliquer ici
 constexpr int16_t kParchmentDrawW = 320; // elargi vers la droite (etait 300) -- origine (0,0) inchangee
 constexpr int16_t kParchmentDrawH = 182; // elargi vers le bas (etait 162)
 
@@ -90,6 +90,12 @@ void Dialogue::render( IRenderer& renderer, ITranslator& translator ) {
         renderer.drawText( centeredX( xpLine, FontSize::Wide ), 22 * 2, xpLine, RGBColor{ 0xb4, 0xff, 0x00 }, FontSize::Wide );
 
         const char* continueText = translator.translate( "DLG_CONTINUE" );
-        renderer.drawText( centeredX( continueText, FontSize::Wide ), 58 * 2, continueText, RGBColor{ 0x19, 0x18, 0x14 }, FontSize::Wide );
+        // Decalage cible de 20px vers la gauche (estimation "a la louche"
+        // de Jicehel) -- le mecanisme de centrage lui-meme (centeredX,
+        // meme police Wide que les autres textes de cet ecran) ne
+        // presente pas d'incoherence de code identifiable ; ajustement
+        // isole a cette chaine specifique plutot qu'une modification du
+        // calcul general, qui semble correct pour le reste de cet ecran.
+        renderer.drawText( centeredX( continueText, FontSize::Wide ) - 20, 58 * 2, continueText, RGBColor{ 0x19, 0x18, 0x14 }, FontSize::Wide );
     }
 }
