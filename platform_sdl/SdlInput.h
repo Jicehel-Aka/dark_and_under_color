@@ -1,7 +1,11 @@
-// SdlInput.h/.cpp — Implémentation clavier de IInput pour la build PC.
-// Flèches + Z/X (ou A/B au choix) -- juste de quoi tester le
-// déplacement pour l'instant, pas encore de vraie configuration de
-// touches (viendra avec le portage de l'écran Options).
+// SdlInput.h/.cpp — Implémentation de IInput pour la build PC : clavier
+// (fleches deplacement/strafe, Q/E tourner, Z=A, X=B, C=inventaire,
+// V=mini-carte -- voir GameApp/RelativeMovement.h pour la logique qui
+// consomme ces boutons). Expose aussi la SOURIS (mouseX/mouseY/
+// mouseClickedThisFrame), specifique PC, volontairement HORS de
+// l'interface IInput commune (AKA n'a pas de souris) -- utilisee par la
+// barre de menu de SdlRenderer (zoom, panneau d'aide), pas par le jeu
+// lui-meme.
 #pragma once
 
 #include "IInput.h"
@@ -17,8 +21,17 @@ class SdlInput : public IInput {
     // IInput (specifique desktop, sans equivalent AKA).
     bool quitRequested() const { return quit; }
 
+    // Souris -- specifique PC (menu de zoom en haut de fenetre, voir
+    // main.cpp), pas dans IInput non plus : AKA n'a pas de souris, ca
+    // n'a rien a faire dans l'interface commune au jeu.
+    int mouseX() const { return mouseXPos; }
+    int mouseY() const { return mouseYPos; }
+    bool mouseClickedThisFrame() const { return mouseClicked; }
+
   private:
     InputState current;
     InputState previous;
     bool quit = false;
+    int mouseXPos = 0, mouseYPos = 0;
+    bool mouseClicked = false;
 };

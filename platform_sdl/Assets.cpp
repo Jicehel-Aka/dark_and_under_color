@@ -60,8 +60,6 @@ const char* assetFileName( ImageId id ) {
         case ImageAsset::SplashCredits: return "garCoLogo.png";
         case ImageAsset::SplashTitleScreen: return "UI_titleScreen.png";
         case ImageAsset::SplashIntro: return "UI_intro.png";
-        case ImageAsset::SplashLargeButton: return "BUT_largeBut.png";
-        case ImageAsset::SplashLargeButtonOver: return "BUT_largeButOver.png";
         case ImageAsset::UIMain: return "UI_main.png";
         case ImageAsset::UICompass: return "UI_compass.png";
         case ImageAsset::EnemyScratch: return "ENM_scratch.png";

@@ -11,8 +11,8 @@ constexpr int kHeight = 20;
 
 // Grille 20x20 -- valeurs identiques à worldGrid de l'original.
 // Note sur TileType::Special (une seule case, ligne 1 dernière colonne) :
-// voir TileType.h, son rôle exact (sortie ? porte ?) n'est pas encore
-// défini côté original.
+// variante décorative de texture de mur, confirmé en portant Vision.pde
+// (voir TileType.h) -- pas une porte/sortie comme supposé au départ.
 constexpr TileType kGrid[kWidth * kHeight] = {
     TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall, TileType::Wall,
     TileType::Wall, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Floor, TileType::Special,

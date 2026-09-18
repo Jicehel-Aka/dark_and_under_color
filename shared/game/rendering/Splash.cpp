@@ -1,3 +1,5 @@
+// Splash.cpp — Implémentation, voir Splash.h pour la machine à états
+// complète et l'historique du bug A/B corrigé.
 #include "Splash.h"
 
 void Splash::onButtonA() {

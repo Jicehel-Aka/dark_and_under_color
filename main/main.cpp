@@ -69,8 +69,9 @@ extern "C" void app_main( void ) {
     };
     akaRuntime.setControlsKeys( kControls );
     akaRuntime.setCredits( "Dark & Under (couleur, AKA)",
-                            "Garage Collective / Press Play On Tape",
-                            "Licence a confirmer avec l'auteur", "" );
+                            "Cyril Guichard (Garage Collective) -- Musique : Visager (CC BY 4.0)",
+                            "BSD 3-Clause avec exception ressources graphiques -- voir LICENSE",
+                            "github.com/Jicehel-Aka/dark_and_under_color" );
 
     AkaRenderer renderer( gfx );
     AkaInput input;
@@ -118,5 +119,6 @@ extern "C" void app_main( void ) {
         input.poll();
         app.update( input );
         app.render( renderer );
+        renderer.present(); // desormais a la charge de l'appelant, voir GameApp.h
     }
 }

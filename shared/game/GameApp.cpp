@@ -1,4 +1,5 @@
 #include "GameApp.h"
+#include "Config.h"
 #include "RelativeMovement.h"
 #include <cstring>
 #include <cstdio>
@@ -140,20 +141,27 @@ void GameApp::updateCombat( const IInput& input ) {
 
     // BUG TROUVE ET CORRIGE (bande du bas jamais mise a jour pendant le
     // combat, signale par Jicehel) : la bande de description affichait
-    // toujours le nom du niveau, jamais "YOU HIT X: 4DMG"/"X HITS: 4DMG"/
-    // "YOU KILLED X" comme l'original (Enemy.pde). "4DMG" litteral des
-    // deux cotes est voulu, pas une erreur -- verifie dans le vrai code
-    // source (lastSentence="...: 4DMG" en dur, quels que soient les PV
-    // reellement retires).
+    // toujours le nom du niveau, jamais "YOU HIT X"/"X HITS"/
+    // "YOU KILLED X" comme l'original (Enemy.pde).
+    //
+    // 2e BUG TROUVE ET CORRIGE (retour de Jicehel : "vraiment ambigu") :
+    // l'original affiche "4DMG" LITTERALEMENT EN DUR des deux cotes,
+    // quels que soient les PV reellement retires (verifie dans le vrai
+    // code source : lastSentence="...: 4DMG" fige) -- fidelement
+    // reproduit tel quel dans une premiere passe, en le signalant comme
+    // "voulu, pas une erreur" par respect du comportement d'origine.
+    // Corrige a la demande de Jicehel : le texte affiche maintenant le
+    // VRAI degat (kEnemyDamageToPlayer=1, kPlayerDamageToEnemy=2), plus
+    // fiable pour le joueur qu'une fidelite a un defaut de l'original.
     if ( lastSeenFightState != FightState::EnemyAttacking && enemy.getFightState() == FightState::EnemyAttacking ) {
-        player.applyDamage( 1 );
+        player.applyDamage( kEnemyDamageToPlayer );
         char buf[48];
-        std::snprintf( buf, sizeof( buf ), translator.translate( "CBT_ENEMY_HITS" ), enemy.getDescription() );
+        std::snprintf( buf, sizeof( buf ), translator.translate( "CBT_ENEMY_HITS" ), enemy.getDescription(), kEnemyDamageToPlayer );
         combatMessage = buf;
     }
     if ( before == FightState::EnemyAttacking && enemy.getFightState() == FightState::PlayerAttacking ) {
         char buf[48];
-        std::snprintf( buf, sizeof( buf ), translator.translate( "CBT_YOU_HIT" ), enemy.getDescription() );
+        std::snprintf( buf, sizeof( buf ), translator.translate( "CBT_YOU_HIT" ), enemy.getDescription(), kPlayerDamageToEnemy );
         combatMessage = buf;
     }
     lastSeenFightState = enemy.getFightState();
@@ -258,7 +266,6 @@ void GameApp::render( IRenderer& renderer ) {
 
     if ( mode == ScreenMode::Splash ) {
         splash.render( renderer, translator );
-        renderer.present();
         return;
     }
 
@@ -322,6 +329,4 @@ void GameApp::render( IRenderer& renderer ) {
     int16_t descTextWidth = (int16_t)( strlen( desc ) * kBottomTextCharWidthPx );
     int16_t descX = (int16_t)( kBottomZoneCenterX - descTextWidth / 2 );
     renderer.drawText( descX, 78 * 2 - 9, desc, RGBColor{ 0xff, 0xff, 0xff }, FontSize::Narrow );
-
-    renderer.present();
 }

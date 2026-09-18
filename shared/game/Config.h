@@ -20,6 +20,16 @@
 // contre 162px de parchemin disponible).
 constexpr int kTileSize = 4;
 
+// Degats de combat -- UNE SEULE definition, partagee entre l'effet reel
+// (Enemy::applyPlayerHit, Player::applyDamage) ET le texte affiche
+// (GameApp::updateCombat) -- l'ancien "4DMG" fige en dur dans le texte
+// (repris fidelement de l'original, corrige a la demande de Jicehel :
+// "vraiment ambigu") venait exactement de ce genre de duplication non
+// synchronisee. En centralisant ici, un futur changement d'equilibrage
+// ne peut plus faire diverger texte et effet reel.
+constexpr int kEnemyDamageToPlayer = 1;
+constexpr int kPlayerDamageToEnemy = 2;
+
 // Dimensions de la grille de niveau (20x20 dans l'unique niveau fourni
 // pour l'instant -- prevu pour varier si des niveaux de tailles
 // differentes sont ajoutes plus tard, voir LevelData.h).

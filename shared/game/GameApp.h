@@ -31,6 +31,13 @@ class GameApp {
     GameApp( const LevelData& levelData, ITranslator& translator );
 
     void update( const IInput& input );
+    // BUG TROUVE ET CORRIGE (barre de menu PC empechait d'inserer du
+    // dessin entre le jeu et l'affichage final) : appelait renderer.present()
+    // en interne auparavant -- desormais a la charge de l'APPELANT
+    // (chaque main.cpp), juste apres ce render(), pour laisser la build
+    // SDL dessiner sa barre de menu entre les deux sans decalage d'une
+    // frame. Ne change rien cote AKA (main.cpp y appelle deja present()
+    // juste apres, meme ordre qu'avant).
     void render( IRenderer& renderer );
 
   private:

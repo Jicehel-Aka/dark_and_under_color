@@ -16,11 +16,14 @@
 //   dialogue est la responsabilité de l'appelant (Level ou un futur
 //   gestionnaire de combat), pas d'Enemy lui-même -- même principe de
 //   découplage que pour Player/moveLegal.
-// - BUG REPÉRÉ, PAS CORRIGÉ (décision de conception, pas à moi de la
-//   prendre) : le texte affiché dit "4DMG" des deux côtés, mais les
-//   dégâts réels appliqués sont -1 PV pour le joueur et -2 PV pour
-//   l'ennemi -- incohérence déjà présente dans l'original. Signalé ici,
-//   valeurs conservées telles quelles.
+// - BUG REPERE, DEPUIS CORRIGE (retour de Jicehel : "vraiment ambigu") :
+//   le texte affiche disait "4DMG" en dur des deux cotes, alors que les
+//   degats reels sont -1 PV pour le joueur et -2 PV pour l'ennemi --
+//   incoherence deja presente dans l'original, reproduite fidelement
+//   dans une premiere passe puis corrigee sur demande. Voir
+//   Config.h (kEnemyDamageToPlayer/kPlayerDamageToEnemy) et
+//   GameApp::updateCombat() pour le texte desormais base sur les
+//   vraies valeurs.
 #pragma once
 
 #include <cstdint>

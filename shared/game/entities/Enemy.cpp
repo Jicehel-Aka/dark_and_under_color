@@ -75,7 +75,7 @@ void Enemy::update( bool actionPressed ) {
         case FightState::PlayerAttacking:
             if ( actionPressed && ( now - lastActionMs > kActionCooldownMs ) ) {
                 lastActionMs = now;
-                applyPlayerHit( 2 ); // voir note "4DMG" dans Enemy.h
+                applyPlayerHit( kPlayerDamageToEnemy ); // meme constante que le texte affiche (GameApp.cpp) -- voir Config.h
                 fightState = FightState::EnemyAttacking;
             }
             break;

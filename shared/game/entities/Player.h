@@ -10,7 +10,9 @@
 //   style catalogue chez les sketches Processing, mais qui ne tient
 //   pas sans un Level/Vision déjà portés. Remplacé ici par deux
 //   callbacks injectés (isTileWalkable, onStepToggled) : Player reste
-//   autonome et testable sans dépendre de classes pas encore portées.
+//   autonome et testable sans dépendre du reste du jeu -- ce découplage
+//   est le choix d'architecture qui a permis de porter chaque classe
+//   indépendamment, avant que Level/Vision existent encore.
 //   Le comportement de jeu est identique, seule la plomberie change.
 // - BUG CORRIGE (pas reproduit) : le constructeur d'origine faisait
 //   "pcolX=col; prowY=row;" -- PAS "pcolX=colX; prowY=rowY;" (les

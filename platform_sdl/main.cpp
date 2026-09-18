@@ -1,6 +1,9 @@
 // main.cpp (build PC/SDL) — Utilise GameApp, le même code que la build
 // AKA. Flèches pour se déplacer/strafe, L1(Q)/R1(E) pour tourner,
 // Z=A, X=B, C=inventaire, V=mini-carte.
+//
+// Zoom de fenetre configurable (x2 par defaut) : lancer avec un
+// argument 2, 3 ou 4, ex. "darkandundercolor_pc.exe 3" pour un zoom x3.
 #include "SdlRenderer.h"
 #include "SdlInput.h"
 #include "SdlTranslator.h"
@@ -9,6 +12,8 @@
 
 #include <SDL2/SDL_mixer.h>
 #include <string>
+#include <cstdlib>
+#include <cstdio>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -48,12 +53,19 @@ std::string exeDirectory() {
 }
 
 int main( int argc, char** argv ) {
-    constexpr int kWindowW = 150 * 2;
-    constexpr int kWindowH = 81 * 2;
-
+    // Zoom PC configurable (retour de Jicehel) : x2 par defaut, x3/x4
+    // au choix via un argument en ligne de commande -- ne change QUE la
+    // taille de la fenetre (voir SdlRenderer::SdlRenderer pour le detail
+    // de pourquoi l'espace de rendu interne, lui, reste fixe).
+    int zoom = 2;
+    if ( argc > 1 ) {
+        int requested = std::atoi( argv[1] );
+        if ( requested >= 2 && requested <= 4 ) zoom = requested;
+        else std::fprintf( stderr, "Zoom invalide (%s) -- valeurs acceptees : 2, 3, 4. Zoom x2 applique par defaut.\n", argv[1] );
+    }
     const std::string baseDir = exeDirectory();
 
-    SdlRenderer renderer( kWindowW, kWindowH, baseDir + "/data" );
+    SdlRenderer renderer( zoom, baseDir + "/data" );
     if ( !renderer.ok() ) return 1;
     // Verification immediate et VISIBLE (pas juste un message dans une
     // console qui n'existe pas quand on double-clique l'exe) : si le
@@ -86,7 +98,19 @@ int main( int argc, char** argv ) {
         if ( input.quitRequested() ) running = false;
 
         app.update( input );
+
+        // Barre de menu demandee par Jicehel : le jeu se dessine dans
+        // sa zone habituelle (beginGameArea positionne viewport+echelle
+        // en consequence), la barre elle-meme APRES, en coordonnees
+        // reelles -- present() n'est plus appele par GameApp::render()
+        // (voir GameApp.h) justement pour pouvoir intercaler ce dessin
+        // sans decalage d'une frame.
+        renderer.beginGameArea();
         app.render( renderer );
+        int clickedZoom = renderer.renderMenuBar( input.mouseX(), input.mouseY(), input.mouseClickedThisFrame() );
+        if ( clickedZoom != 0 ) renderer.setZoom( clickedZoom );
+        if ( renderer.isHelpPanelOpen() ) renderer.renderHelpPanel();
+        renderer.present();
 
         SDL_Delay( 16 );
     }

@@ -1,3 +1,5 @@
+// AkaInput.cpp — Implémentation, voir AkaInput.h pour le rôle du
+// fichier.
 #include "AkaInput.h"
 
 void AkaInput::poll() {

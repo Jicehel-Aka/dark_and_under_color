@@ -1,16 +1,26 @@
-# Dark & Under (couleur) -> AKA + PC/SDL — État d'avancement
+# Dark & Under (couleur) -> AKA + PC/SDL — Journal de développement
+
+**Voir [`README.md`](README.md) pour la présentation du projet, les
+instructions de compilation et les commandes.** Ce fichier-ci est le
+journal détaillé, session par session, de tout le travail de portage —
+utile pour comprendre POURQUOI une décision a été prise ou un bug
+corrigé d'une certaine façon, pas pour une prise en main rapide.
 
 Portage du remake couleur (Processing/Java, fourni par Jicehel avec
-l'autorisation de l'auteur — licence à confirmer, pas incluse dans les
-fichiers fournis) vers deux cibles : AKA (ESP32-S3) et PC (SDL2, pour
-tester sans matériel). Aucune couche de compatibilité type Arduboy2 ici
-— Processing n'a aucun rapport avec cette API, portage direct en C++
-natif par-dessus `gb_graphics`/`gb_core` (AKA) ou SDL2 (PC).
+l'autorisation de l'auteur — voir `LICENSE` pour le détail complet des
+droits, y compris les ressources tierces (musique, police)) vers deux
+cibles : AKA (ESP32-S3) et PC (SDL2, pour tester sans matériel). Aucune
+couche de compatibilité type Arduboy2 ici -- Processing n'a aucun
+rapport avec cette API, portage direct en C++ natif par-dessus
+`gb_graphics`/`gb_core` (AKA) ou SDL2 (PC).
 
-**État : compile en syntaxe des deux côtés (g++ -fsyntax-only avec les
-vraies bibliothèques gamebuino/aka_runtime côté AKA, vraie CMake+SDL2
-côté PC). Jamais testé sur le vrai toolchain ESP-IDF ni exécuté pour de
-vrai (ni sur SDL faute d'environnement graphique dans ce bac à sable).**
+**État actuel : le jeu tourne réellement sur les deux cibles** (testé
+sur matériel AKA et en exécutable PC, pas seulement en compilation) --
+voir les sessions les plus récentes ci-dessous pour le détail des
+derniers ajustements. Les toutes premières sessions listées plus bas
+ne reflètent que l'état de CE moment-là (uniquement vérifié par
+compilation, jamais exécuté) -- gardées telles quelles comme trace
+historique, pas comme description de l'état actuel.
 
 ## Architecture
 
@@ -1020,3 +1030,192 @@ Verifie : les 71 entrees sont bien presentes des deux cotes apres
 regeneration (confirme par recherche directe de `UIMain`/`VisionBack`
 dans le fichier SDL genere), compilation complete des fichiers
 modifies.
+
+## Session 30 : zoom PC configurable (x2 par défaut, x3/x4 au choix)
+
+Demandé par Jicehel. Implémenté sans toucher à AUCUN appel de dessin
+existant : tout le code de jeu (`Vision`, `Dialogue`, `UI`...) suppose
+un espace de rendu fixe de 300x162 ("logique x2") -- changer ce
+facteur en dur dans des dizaines d'endroits aurait été risqué pour peu
+de gain. Utilisé `SDL_RenderSetLogicalSize(renderer, 300, 162)` à la
+place : l'espace de rendu interne reste STRICTEMENT fixe, SDL met à
+l'échelle automatiquement vers la taille RÉELLE de la fenêtre (elle,
+configurable) -- zéro risque de régression sur le rendu existant, texte
+compris (le mécanisme SDL s'applique uniformément à toutes les
+primitives, pas seulement aux textures).
+
+Zoom choisi via un argument en ligne de commande au lancement (2, 3 ou
+4 -- ex. `darkandundercolor_pc.exe 3`), x2 par défaut si omis ou si
+la valeur donnée est hors de cette plage (avec un message d'avertissement
+dans ce dernier cas plutôt qu'un plantage).
+
+Vérifié : compilation complète des deux fichiers modifiés.
+
+## Session 31 : menu de zoom cliquable en haut de fenêtre (PC)
+
+Demandé par Jicehel -- une vraie barre "ZOOM: x2 x3 x4" cliquable à la
+souris, plutôt que l'argument en ligne de commande de la session
+précédente.
+
+**Souris ajoutée à `SdlInput`** (n'existait pas du tout jusqu'ici --
+le jeu n'utilise que le clavier depuis le passage aux boutons
+physiques) : position + clic-ce-tour, PC uniquement, pas dans
+`IInput` (AKA n'a pas de souris, rien à y faire).
+
+**`SDL_RenderSetLogicalSize` (session précédente) abandonné** : son
+cadrage automatique s'applique à toute la fenêtre, incompatible avec
+une barre de menu en haut. Remplacé par un contrôle manuel
+(`beginGameArea()` : viewport décalé sous la barre + échelle
+`zoom/2`, le jeu continuant de dessiner exactement comme avant en
+coordonnées "300x162" ; `renderMenuBar()` : viewport plein écran,
+échelle 1:1, coordonnées réelles non affectées par le zoom -- texte du
+menu toujours la même taille quel que soit le zoom choisi).
+
+**Changement d'architecture partagée, sans impact sur AKA** :
+`GameApp::render()` appelait `renderer.present()` en interne --
+impossible d'insérer le dessin de la barre entre le jeu et
+l'affichage final sans décalage d'une frame. Déplacé à la charge de
+l'appelant (chaque `main.cpp`) ; le `main.cpp` AKA appelle
+maintenant `present()` explicitement juste après `render()`, au même
+endroit qu'avant -- comportement strictement identique côté AKA.
+
+Zoom sélectionné en cliquant sur x2/x3/x4 redimensionne la fenêtre en
+direct (`SDL_SetWindowSize`), pas besoin de relancer l'exécutable.
+
+Vérifié : compilation complète des fichiers modifiés (SDL et AKA).
+
+## Session 32 : panneau d'aide dans la barre de menu PC
+
+Demandé par Jicehel -- garder le menu système AKA tel quel (propre à
+la console) et ajouter, côté PC uniquement, un panneau d'aide dans la
+barre déjà en place.
+
+Bouton "?" ajouté à côté des boutons de zoom. Au clic, ouvre un
+panneau qui couvre le reste de la fenêtre (fond semi-transparent
+par-dessus le jeu) avec :
+- **Commandes** : correspondance touche PC -> bouton AKA -> à quoi ça
+  sert (Haut/Bas, Gauche/Droite, Q/E=L1/R1, Z=A, X=B, C, V).
+- **Autres versions** : console Gamebuino AKA vs cette build PC de test.
+- **Crédits** : repris du `LICENSE` pour rester cohérent (Cyril
+  Guichard/Garage Collective, Press Play On Tape, musique Visager
+  CC BY 4.0, police Simple 5x8 Atom596 FFC, portage Jicehel).
+- **Lien GitHub** du dépôt.
+
+Au passage, mis à jour les crédits du menu système AKA lui-même
+(`akaRuntime.setCredits()`), restés à un texte provisoire ("licence à
+confirmer") depuis une session bien antérieure alors que le vrai
+`LICENSE` existe maintenant -- même contenu que le panneau PC, pour
+rester cohérent entre les deux versions.
+
+Vérifié : compilation complète (PC et AKA).
+
+## Session 33 : contrôle total -- en-têtes, obsolescence, documentation GitHub
+
+Demandé par Jicehel pendant qu'il teste de son côté : audit complet du
+projet (51 fichiers source), pas de correction de bug cette fois.
+
+**En-têtes de fichiers** : 6 fichiers avec un en-tête absent ou réduit
+à une ligne complétés (`AkaInput.h/.cpp`, `AkaTranslator.h`,
+`SdlInput.cpp`, `Splash.cpp`) -- plus `SdlInput.h`, dont l'en-tête
+existant était devenu FAUX (disait encore "pas encore de vraie
+configuration de touches", alors que souris + menu de zoom existent
+depuis), corrigé plutôt que juste complété.
+
+**Commentaires obsolètes trouvés et corrigés** : `Level00.cpp`
+affirmait encore que le rôle de `TileType::Special` n'était "pas
+encore défini côté original" -- alors que ça a été confirmé (variante
+décorative de mur, pas une porte) en portant `Vision.pde`, il y a
+longtemps. `Player.h` reformulé légèrement (design toujours valide,
+juste la formulation datait d'avant que tout soit porté).
+
+**Code et fichiers morts retirés** : `SplashLargeButton`/
+`SplashLargeButtonOver` (2 assets jamais utilisés depuis que les
+boutons tactiles PLAY/CREDITS ont été remplacés par du texte, ~9 Ko de
+flash gaspillés) supprimés de `AssetIds.h` et de la config -- 69 assets
+au lieu de 71 désormais. Trois fichiers de config intermédiaires
+(`objects_config.json`, `world_config.json`, `ui_config.json`),
+fusionnés depuis longtemps dans `all_assets_config.json` mais jamais
+supprimés, retirés -- plus rien ne les référençait.
+
+**Documentation GitHub** : `README.md` créé (n'existait pas du tout --
+seul `README_STATUS.md`, un journal de session par session, existait,
+pas une vraie page d'accueil). Couvre présentation, état actuel,
+compilation (AKA + PC + CI/releases), commandes, structure du dépôt,
+langues, licence. `README_STATUS.md` recadré comme journal détaillé
+plutôt que doc principale, avec un renvoi clair vers `README.md` en
+tête -- son propre paragraphe d'ouverture était lui-même perimé
+("licence à confirmer", "jamais testé pour de vrai") depuis une
+trentaine de sessions, corrigé.
+
+Tout revérifié après coup : compilation complète, JSON valide.
+
+### Améliorations proposées (pas appliquées, à la discrétion de Jicehel)
+
+- **Langues** : seuls fr/en traduits, de/es/it supportés par le système
+  mais vides -- à compléter si besoin.
+- **"Continuez" mal centré** (session 23) : corrigé par un ajustement
+  isolé de -20px sans cause identifiée avec certitude dans le code --
+  fonctionne, mais reste une rustine plutôt qu'une correction de fond.
+  À revisiter si un jour la cause réelle se manifeste ailleurs.
+- **Pas de bruitages (SFX)**, seulement la musique de fond -- absent de
+  cette passe, jamais demandé jusqu'ici.
+- **Un seul niveau fourni** ("Underground Lair") -- en ajouter d'autres
+  suivrait exactement le patron de `Level00.cpp`.
+- **`README_STATUS.md` a atteint ~1100 lignes** -- toujours utile comme
+  historique detaille, mais pourrait valoir une restructuration en
+  format CHANGELOG (le plus recent en premier, ou resume par grandes
+  etapes) si sa taille devient genante a naviguer.
+
+## Session 34 : traduction allemand/espagnol/italien
+
+Les 3 langues manquantes (le système en gère 5, seuls fr/en étaient
+traduits jusqu'ici) complétées -- 39 clés chacune, correspondance
+exacte avec les clés françaises vérifiée programmatiquement (aucune
+manquante, aucune en trop).
+
+**Sans caractères accentués, volontairement** : ni la police système
+8x8 (`font8x8_basic`) ni la police 5x8 "Simple 5x8" ne couvrent autre
+chose que l'ASCII imprimable (32-126) -- vérifié avant de traduire,
+pas après coup. Allemand sans umlauts (ue/oe/ae/ss), espagnol et
+italien sans accents ni ñ -- pratique courante pour ce genre de
+contrainte de police sur les jeux pixel-art.
+
+**Longueurs vérifiées précisément** (pas à l'oeil) contre les deux
+limites déjà établies : ~16 caractères pour les textes affichés sur le
+parchemin, ~28 pour l'écran Commandes du menu système -- aucune des
+3 langues ne dépasse ces limites sur aucune clé.
+
+**Particularité de l'original reproduite dans les 3 langues** : le
+"4DMG" affiché en dur (quels que soient les PV réellement retirés,
+voir session 19) traduit en abréviation locale plutôt que laissé en
+anglais -- "4SCH" (Schaden) en allemand, "4DA" (daño) en espagnol,
+"4DN" (danno) en italien -- même principe que "4DGT" déjà utilisé en
+français.
+
+Fichiers écrits dans `sdcard_files/DarkUnderColor/lang/` (AKA) et
+copiés vers `platform_sdl/lang/` (test PC), comme pour fr/en. JSON
+valide sur les 3.
+
+## Session 35 : correction du "4DMG" ambigu -- vraies valeurs affichées
+
+Demandé par Jicehel : le "4DMG" fixe (reproduit fidèlement depuis
+l'original, signalé comme "voulu" dans une session précédente) était
+trop ambigu pour être gardé tel quel.
+
+**Corrigé** : les messages de combat affichent maintenant les vraies
+valeurs (1 PV pour l'ennemi vers le joueur, 2 PV pour le joueur vers
+l'ennemi -- `%s HITS: 1DMG` / `YOU HIT %s: 2DMG`), dans les 5 langues.
+
+**Pour ne pas recréer le même genre de bug plus tard** : les deux
+valeurs de dégâts, jusqu'ici deux "2" et "1" indépendants dans
+`Enemy.cpp` et `GameApp.cpp` (exactement le genre de duplication qui
+avait causé le "4DMG" figé de l'original), centralisées dans
+`Config.h` (`kEnemyDamageToPlayer`, `kPlayerDamageToEnemy`) -- un futur
+changement d'équilibrage ne peut plus faire diverger le texte affiché
+de l'effet réel, puisque les deux lisent la même constante.
+
+Commentaires mis à jour en conséquence dans `Enemy.h` (le "BUG REPÉRÉ,
+PAS CORRIGÉ" documenté en session 19 n'est plus d'actualité).
+
+Vérifié : compilation complète, JSON valide sur les 10 fichiers de
+langue touchés (5 langues x 2 emplacements).

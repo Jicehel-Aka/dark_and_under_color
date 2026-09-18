@@ -16,10 +16,15 @@
 
 class SdlRenderer : public IRenderer {
   public:
-    // assetDir : dossier contenant les PNG d'origine (le "data/" du
-    // projet Processing, réutilisé tel quel -- voir Assets.h pour la
-    // table ImageId -> nom de fichier).
-    SdlRenderer( int windowWidth, int windowHeight, const std::string& assetDir );
+    // Hauteur FIXE de la barre de menu (retour de Jicehel : menu de
+    // zoom en haut de fenetre) -- en pixels REELS, ne change pas avec
+    // le zoom (sinon elle deviendrait illisible a x2 ou enorme a x4).
+    static constexpr int kMenuBarHeight = 20;
+
+    // zoom : x2/x3/x4 (voir setZoom) -- assetDir : dossier contenant
+    // les PNG d'origine (le "data/" du projet Processing, réutilisé
+    // tel quel -- voir Assets.h pour la table ImageId -> nom de fichier).
+    SdlRenderer( int zoom, const std::string& assetDir );
     ~SdlRenderer() override;
 
     void fillRect( int16_t x, int16_t y, int16_t w, int16_t h, RGBColor color ) override;
@@ -44,11 +49,47 @@ class SdlRenderer : public IRenderer {
     // noir muet.
     bool verifyAssetsLoadable();
 
+    // A appeler EN DEBUT de chaque frame, avant le rendu du jeu lui
+    // meme (Vision/UI/...) : positionne la zone de dessin (viewport +
+    // echelle) sous la barre de menu -- le jeu continue de dessiner
+    // exactement comme avant (coordonnees "300x162", zoom x2 deja
+    // integre dans le code de jeu), c'est ici que le zoom
+    // SUPPLEMENTAIRE (x3/x4) et le decalage pour la barre sont
+    // appliques, sans toucher a un seul appel de dessin du jeu.
+    void beginGameArea();
+
+    // Dessine "ZOOM :  x2  x3  x4  [?]" en haut de la fenetre, en
+    // coordonnees REELLES (pas affectees par le zoom du jeu -- taille
+    // de texte constante quel que soit le zoom choisi). A appeler APRES
+    // le rendu du jeu, avant present(). Renvoie le zoom sur lequel
+    // l'utilisateur vient de cliquer (0 si aucun clic ce tour-ci) --
+    // c'est a l'appelant (main.cpp) de decider d'appliquer setZoom()
+    // avec cette valeur. Le bouton "?" bascule lui-meme
+    // isHelpPanelOpen() en interne (pas besoin que l'appelant s'en
+    // occupe, contrairement au zoom qui modifie la taille de fenetre).
+    int renderMenuBar( int mouseX, int mouseY, bool mouseClicked );
+
+    // Panneau d'aide demande par Jicehel (commandes PC/touche AKA
+    // correspondante, autres versions, credits, lien GitHub) -- a
+    // appeler juste apres renderMenuBar() si isHelpPanelOpen() est vrai.
+    // Couvre toute la fenetre en coordonnees reelles, par-dessus le jeu.
+    void renderHelpPanel();
+    bool isHelpPanelOpen() const { return helpPanelOpen; }
+
+    // Change le zoom EN COURS D'EXECUTION -- redimensionne la fenetre
+    // reelle (SDL_SetWindowSize), la zone de jeu s'adapte automatiquement
+    // au prochain beginGameArea().
+    void setZoom( int zoom );
+    int getZoom() const { return currentZoom; }
+
   private:
     SDL_Texture* getTexture( ImageId image );
+    void drawMenuText( int x, int y, const char* text, RGBColor color ); // texte en coordonnees reelles, non affecte par le zoom du jeu
 
     std::string assetDir;
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
     std::unordered_map<ImageId, SDL_Texture*> textureCache;
+    int currentZoom = 2;
+    bool helpPanelOpen = false;
 };

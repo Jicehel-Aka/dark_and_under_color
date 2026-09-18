@@ -54,7 +54,7 @@ enum class ImageAsset : uint16_t {
     StatsParcheminLarge, StatsPortrait, StatsSymbolAP, StatsSymbolDF, StatsBackButton,
 
     // Écran splash/titre/intro (Splash.pde).
-    SplashCredits, SplashTitleScreen, SplashIntro, SplashLargeButton, SplashLargeButtonOver,
+    SplashCredits, SplashTitleScreen, SplashIntro,
     InventorySelectHighlight,
 
     // UI permanente pendant l'exploration/le combat (UI.pde).

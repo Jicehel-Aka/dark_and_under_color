@@ -217,14 +217,6 @@
     "gamma": 0.93
   },
   {
-    "id": "SplashLargeButton",
-    "file": "BUT_largeBut.png"
-  },
-  {
-    "id": "SplashLargeButtonOver",
-    "file": "BUT_largeButOver.png"
-  },
-  {
     "id": "UIMain",
     "file": "UI_main.png"
   },
