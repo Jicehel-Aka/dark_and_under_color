@@ -1298,3 +1298,21 @@ deviner un correctif.
 
 Vérifié : compilation complète (AKA + SDL + fichiers embarqués), YAML
 valide sur les 3 workflows.
+
+## Session 37 : boutons PLAY/CREDITS trop petits, texte pas centré
+
+Retour de Jicehel avec capture d'écran : boutons ~2 lettres trop
+étroits (texte le plus long, "B: CREDITS"/équivalents, débordait) et
+texte calé en haut du bouton au lieu d'être centré verticalement.
+
+Corrigé : boutons élargis (56x22 au lieu de 46x18, logique x2),
+repositionnés symétriquement de part et d'autre du centre de l'écran
+avec un espacement fixe. Texte désormais centré horizontalement ET
+verticalement dans chaque bouton, calculé dynamiquement sur la
+longueur réelle du texte traduit (varie selon la langue) plutôt qu'une
+position fixe pensée pour le français.
+
+Vérifié numériquement (pas juste visuellement à l'oeil) : même le
+texte le plus long des 5 langues ("A: SPIELEN", allemand) tient avec
+16px de marge de chaque côté dans le nouveau bouton. Compilation
+vérifiée.
