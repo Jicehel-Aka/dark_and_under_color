@@ -104,13 +104,18 @@ void GameApp::update( const IInput& input ) {
 void GameApp::updateExploring( const IInput& input ) {
     FacingDirection facing = vision.getDirection();
 
+    // Haut/Bas : avancer/reculer, relatifs a la direction de vue --
+    // inchange. Gauche/Droite/L1/R1 : ROLES INVERSES a la demande de
+    // Jicehel ("moins utile de straffer dans ce jeu") -- Gauche/Droite
+    // tournent desormais le regard, L1/R1 straffent (etait l'inverse
+    // jusqu'ici). Meme fonctions RelativeMovement.h, juste rebranchees.
     if ( input.justPressed( &InputState::up ) )    player.movePlayer( relativeForward( facing ) );
     if ( input.justPressed( &InputState::down ) )  player.movePlayer( relativeBackward( facing ) );
-    if ( input.justPressed( &InputState::left ) )  player.movePlayer( relativeStrafeLeft( facing ) );
-    if ( input.justPressed( &InputState::right ) ) player.movePlayer( relativeStrafeRight( facing ) );
+    if ( input.justPressed( &InputState::left ) )  vision.setDirection( rotateLeft( facing ) );
+    if ( input.justPressed( &InputState::right ) ) vision.setDirection( rotateRight( facing ) );
 
-    if ( input.justPressed( &InputState::l1 ) ) vision.setDirection( rotateLeft( facing ) );
-    if ( input.justPressed( &InputState::r1 ) ) vision.setDirection( rotateRight( facing ) );
+    if ( input.justPressed( &InputState::l1 ) ) player.movePlayer( relativeStrafeLeft( facing ) );
+    if ( input.justPressed( &InputState::r1 ) ) player.movePlayer( relativeStrafeRight( facing ) );
 
     if ( input.justPressed( &InputState::actionC ) ) { modeBeforeInventory = ScreenMode::Exploring; mode = ScreenMode::Inventory; }
     if ( input.justPressed( &InputState::actionD ) ) mode = ScreenMode::MinimapView;
@@ -281,8 +286,20 @@ void GameApp::render( IRenderer& renderer ) {
     // etait en fait deja a la bonne taille tout du long ; ses marges
     // transparentes laissent voir le panneau de droite du dessous, qui
     // n'existait tout simplement pas dans les rendus precedents.
-    ui.renderFrame( renderer );
+    // BUG TROUVE ET CORRIGE (retour de Jicehel : "le rendu pseudo 3D est
+    // au-dessus du pourtour de l'UI") : ordre INVERSE par rapport au
+    // vrai code source, verifie une 2e fois pour etre sur --
+    // darkUnderCOLOR.pde::draw() fait "myVision.playerVision()" EN
+    // PREMIER (ligne 65) PUIS "myUI.display()" (ligne 66), pas
+    // l'inverse. Mon implementation precedente (session 17) avait bien
+    // identifie le principe general ("Vision+UI toujours dessines")
+    // mais s'etait trompee sur LEQUEL des deux passe en premier --
+    // Vision dessinait donc PAR-DESSUS le cadre/pourtour de l'UI au
+    // lieu de l'inverse. Corrige : Vision d'abord, cadre+etat ensuite
+    // (comme un seul myUI.display() ferait en interne : fond puis
+    // barres/icones par-dessus).
     vision.render( renderer, level, player, objects, enemies );
+    ui.renderFrame( renderer );
     ui.renderStatus( renderer, player, vision.getDirection() );
     if ( mode == ScreenMode::Combat && activeEnemyIndex >= 0 && activeEnemyIndex < (int)enemies.size() ) {
         ui.renderCombat( renderer, enemies[activeEnemyIndex] );
@@ -328,5 +345,5 @@ void GameApp::render( IRenderer& renderer ) {
     constexpr int16_t kBottomTextCharWidthPx = 6; // police Narrow
     int16_t descTextWidth = (int16_t)( strlen( desc ) * kBottomTextCharWidthPx );
     int16_t descX = (int16_t)( kBottomZoneCenterX - descTextWidth / 2 );
-    renderer.drawText( descX, 78 * 2 - 9, desc, RGBColor{ 0xff, 0xff, 0xff }, FontSize::Narrow );
+    renderer.drawText( descX, 78 * 2 - 8, desc, RGBColor{ 0xff, 0xff, 0xff }, FontSize::Narrow );
 }

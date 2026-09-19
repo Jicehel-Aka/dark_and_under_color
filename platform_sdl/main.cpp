@@ -63,9 +63,13 @@ int main( int argc, char** argv ) {
         if ( requested >= 2 && requested <= 4 ) zoom = requested;
         else std::fprintf( stderr, "Zoom invalide (%s) -- valeurs acceptees : 2, 3, 4. Zoom x2 applique par defaut.\n", argv[1] );
     }
-    const std::string baseDir = exeDirectory();
+    const std::string baseDir = exeDirectory(); // encore utile pour la musique, la seule chose qui reste externe (voir plus bas)
 
-    SdlRenderer renderer( zoom, baseDir + "/data" );
+    // Images/langues EMBARQUEES dans l'executable (demande par
+    // Jicehel) -- SdlRenderer/SdlTranslator lisent desormais
+    // platform_sdl/embedded/ au lieu de fichiers sur disque, plus de
+    // "data"/"lang" a copier a cote de l'exe pour ca.
+    SdlRenderer renderer( zoom );
     if ( !renderer.ok() ) return 1;
     // Verification immediate et VISIBLE (pas juste un message dans une
     // console qui n'existe pas quand on double-clique l'exe) : si le
@@ -77,20 +81,25 @@ int main( int argc, char** argv ) {
     // Langue fixee au francais pour cette build de test -- pas de menu
     // systeme AKA ici pour la changer a la volee. Remplacer "fr" par
     // "en" pour tester l'autre langue disponible.
-    SdlTranslator translator( baseDir + "/lang/aka_common_fr.json", baseDir + "/lang/fr.json" );
+    SdlTranslator translator( "aka_common_fr.json", "fr.json" );
     GameApp app( kLevel00, translator );
 
-    // Musique -- meme fichier .wav que la build AKA (converti depuis le
-    // MP3 d'origine, "Pyramid Level" par Visager, CC BY 4.0 -- voir
-    // LICENSE), place directement a cote de l'executable plutot que
-    // sous sdcard_files/ (qui n'a de sens que sur AKA). Mix_PlayMusic()
-    // boucle nativement (parametre -1), pas besoin du bricolage manuel
-    // de redemarrage utilise cote AKA (gb_audio_track_wav n'a pas cette
-    // option). Musique desactivee (pas bloquante) si Mix_OpenAudio()
-    // echoue -- ex. pas de peripherique son disponible en CI/tests.
+    // Musique -- SEULE chose qui reste un fichier EXTERNE (a cote de
+    // l'exe) : Jicehel a valide d'embarquer tout le reste, mais pas le
+    // fichier audio (~9,5 Mo -- genererait ~36 Mo de code source une
+    // fois converti en tableau C, compile mais lentement, pas justifie
+    // pour ce seul fichier). Meme fichier .wav que la build AKA
+    // (converti depuis le MP3 d'origine, "Pyramid Level" par Visager,
+    // CC BY 4.0 -- voir LICENSE). Mix_PlayMusic() boucle nativement
+    // (parametre -1), pas besoin du bricolage manuel de redemarrage
+    // utilise cote AKA (gb_audio_track_wav n'a pas cette option).
+    // Musique desactivee (pas bloquante) si Mix_OpenAudio() echoue --
+    // ex. pas de peripherique son disponible en CI/tests.
     bool audioOk = ( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 1, 2048 ) == 0 );
     Mix_Music* music = audioOk ? Mix_LoadMUS( ( baseDir + "/music/level_loop.wav" ).c_str() ) : nullptr;
     if ( music ) Mix_PlayMusic( music, -1 );
+
+    bool muted = false; // bouton son dans la barre de menu, demande par Jicehel
 
     bool running = true;
     while ( running ) {
@@ -107,8 +116,10 @@ int main( int argc, char** argv ) {
         // sans decalage d'une frame.
         renderer.beginGameArea();
         app.render( renderer );
-        int clickedZoom = renderer.renderMenuBar( input.mouseX(), input.mouseY(), input.mouseClickedThisFrame() );
+        bool wasMuted = muted;
+        int clickedZoom = renderer.renderMenuBar( input.mouseX(), input.mouseY(), input.mouseClickedThisFrame(), muted );
         if ( clickedZoom != 0 ) renderer.setZoom( clickedZoom );
+        if ( muted != wasMuted && audioOk ) Mix_VolumeMusic( muted ? 0 : MIX_MAX_VOLUME );
         if ( renderer.isHelpPanelOpen() ) renderer.renderHelpPanel();
         renderer.present();
 

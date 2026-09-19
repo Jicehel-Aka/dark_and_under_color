@@ -1219,3 +1219,82 @@ PAS CORRIGÉ" documenté en session 19 n'est plus d'actualité).
 
 Vérifié : compilation complète, JSON valide sur les 10 fichiers de
 langue touchés (5 langues x 2 emplacements).
+
+## Session 36 : embarquement PC (images+langues), police accentuée, remap contrôles, corrections rendu
+
+Message tres dense de Jicehel, traite integralement.
+
+**Police accentuee (aka_font, fournie par Jicehel)** : composant propre
+et bien pense (rendu UTF-8 par callback pixel, reutilisable AKA+SDL).
+Vrai bug trouve dedans (`font8x8_basic.h` declare son tableau en `char`
+signe alors qu'il contient du 0xFF -- corrige en `unsigned char` +
+`inline` par precaution) avant integration. Cable dans
+`AkaRenderer::drawText()` ET `SdlRenderer::drawText()/drawMenuText()`
+pour le chemin Wide -- accents francais/allemand/espagnol desormais
+disponibles (traductions existantes pas encore revues avec accents,
+restent volontairement accent-free pour l'instant, sans risque).
+
+**4 icones d'action (epee/magie/potion/bouclier) retrouvees** dans
+UI.pde -- oubliees lors du retrait des boutons tactiles (seules les
+fleches directionnelles avaient ete reintegrees). Ajoutees comme
+reperes visuels statiques.
+
+**Bug de rendu majeur trouve et corrige** : Vision (couloir 3D) se
+dessinait APRES le cadre UI, le couvrant -- verifie contre le vrai
+`darkUnderCOLOR.pde` (ligne 65-66) : l'original dessine Vision EN
+PREMIER, UI ENSUITE. Erreur d'inversion de ma part en session 17 (le
+principe general "toujours dessines" etait juste, l'ordre relatif
+etait faux). Corrige.
+
+**Remap complet des controles** (Gauche/Droite=tourner, L1/R1=straffer,
+inverse de l'ancien schema -- "moins utile de straffer dans ce jeu") :
+`GameApp::updateExploring()` (logique jeu, partagee), `SdlInput.cpp`
+(scancodes PHYSIQUES -- independants AZERTY/QWERTY -- W/A/S/D+Q/E pour
+le deplacement, Z/X/C/V + Espace/Retour arriere/Suppr/Entree pour les
+actions, en plus des fleches). CTRL_STRAFE/CTRL_TURN inverses dans les
+5 langues (fr/en/de/es/it, sdcard_files ET platform_sdl).
+
+**Ecran-titre : PLAY/CREDITS invisibles, cause reelle trouvee** : texte
+sombre sur fond sombre, ET le bouton graphique clair de l'original
+(`BUT_largeBut.png`) avait ete supprime a tort en session 33 (cru mort
+alors qu'il n'etait jamais cable). Reintegre comme fond derriere le
+texte.
+
+**Couleurs AKA "fade"** : nouveau levier ajoute (saturation +1.35,
+gamma et contraste renforces) -- le PC (image jointe par Jicehel)
+etait deja correct, confirmant que le probleme est specifique a la
+reduction RGB565 (AKA uniquement, le PC charge les PNG 24 bits
+directement).
+
+**Positions "Continuer"/bande de message** ajustees selon les derniers
+retours. **Bouton son** ajoute dans la barre de menu PC (coupe/retablit
+`Mix_VolumeMusic`). **Indication de fermeture** ajoutee dans le
+panneau d'aide.
+
+**Embarquement PC** (images+langues dans l'executable, MUSIQUE EXCLUE
+a la demande de Jicehel apres discussion sur le cout de compilation --
+9,5 Mo de WAV auraient genere ~36 Mo de source, teste et ca compile en
+~14s, mais pas juge utile pour ce seul fichier) : nouveau composant
+`components/aka_font`-like `tools/embed_pc_assets.py` genere
+`platform_sdl/embedded/embedded_images.cpp` (105 fichiers, 259 Ko
+source) et `embedded_lang.cpp` (6 fichiers). `SdlRenderer::getTexture()`
+et `SdlTranslator` reecrits pour charger depuis la memoire
+(IMG_Load_RW/SDL_RWFromConstMem) au lieu de fichiers disque -- seule la
+musique reste externe (`music/` a cote de l'exe). CMakeLists.txt,
+workflows (release.yml, build-pc.yml) et README.md mis a jour en
+consequence (plus de data/lang a copier).
+
+**Aide/documentation mises a jour** avec le nouveau schema de
+controles : panneau d'aide PC (SdlRenderer.cpp), README.md (tableau de
+commandes + section compilation).
+
+**Question "mage/mixer mal cadre a zoom x3/x4"** : verifie
+geometriquement (positions des icones d'action et des boutons de la
+barre de menu a chaque niveau de zoom) -- aucune anomalie trouvee dans
+les calculs. Reponse donnee a Jicehel : interpretation la plus
+probable (icone magie + bouton son, tous deux recents), mais incertitude
+signalee honnetement, capture d'ecran demandee pour confirmer plutot que
+deviner un correctif.
+
+Vérifié : compilation complète (AKA + SDL + fichiers embarqués), YAML
+valide sur les 3 workflows.

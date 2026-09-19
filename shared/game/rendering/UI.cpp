@@ -24,6 +24,14 @@ void UI::renderStatus( IRenderer& renderer, const Player& player, FacingDirectio
     renderer.drawImageScaled( 133 * 2, 51 * 2, 12 * 2, 12 * 2, (ImageId)ImageAsset::ArrowRotateRight );
     renderer.drawImageScaled( 103 * 2, 51 * 2, 12 * 2, 12 * 2, (ImageId)ImageAsset::ArrowRotateLeft );
 
+    // Icones d'action rapide (grille 2x2 sous PV/XP) -- memes positions
+    // que l'original (UI.pde : swordAttackButton/magicAttackButton/
+    // potionButton/shieldButton), reperes visuels statiques.
+    renderer.drawImageScaled( 110 * 2, 18 * 2, 12 * 2, 12 * 2, (ImageId)ImageAsset::IconSword );
+    renderer.drawImageScaled( 125 * 2, 18 * 2, 12 * 2, 12 * 2, (ImageId)ImageAsset::IconMagic );
+    renderer.drawImageScaled( 110 * 2, 34 * 2, 12 * 2, 12 * 2, (ImageId)ImageAsset::IconPotion );
+    renderer.drawImageScaled( 125 * 2, 34 * 2, 12 * 2, 12 * 2, (ImageId)ImageAsset::IconShield );
+
     // Barres PV/XP -- meme echelle que l'original (17 unites de large
     // max), meme position relative.
     float hpRatio = player.getCurrentHP() / player.getMaxHP();

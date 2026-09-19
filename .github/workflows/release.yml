@@ -87,7 +87,9 @@ jobs:
         run: cmake --build build --config Release
 
       # --- Assemble le paquet a publier : executable + ressources
-      # d'execution (data/lang/music) + DLL SDL2 sur Windows (liaison
+      # d'execution -- SEULEMENT music/ desormais (images et langues
+      # sont embarquees directement dans l'executable, voir
+      # tools/embed_pc_assets.py) + DLL SDL2 sur Windows (liaison
       # dynamique, sinon l'exe ne demarre pas chez quelqu'un qui n'a pas
       # SDL2 installe) ---
       - name: Package (Linux)
@@ -95,8 +97,6 @@ jobs:
         run: |
           mkdir -p package
           cp build/darkandundercolor_pc package/
-          cp -r platform_sdl/data package/
-          cp -r platform_sdl/lang package/
           cp -r platform_sdl/music package/
           cd package && zip -r ../darkandundercolor-${{ matrix.name }}.zip . && cd ..
 
@@ -106,8 +106,6 @@ jobs:
         run: |
           mkdir package
           Copy-Item build\Release\darkandundercolor_pc.exe package\
-          Copy-Item -Recurse platform_sdl\data package\
-          Copy-Item -Recurse platform_sdl\lang package\
           Copy-Item -Recurse platform_sdl\music package\
           # DLL runtime SDL2 et leurs dependances transitives (formats
           # image/son) -- copie tout ce qui existe dans bin/, plus

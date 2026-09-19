@@ -96,6 +96,10 @@ void Dialogue::render( IRenderer& renderer, ITranslator& translator ) {
         // presente pas d'incoherence de code identifiable ; ajustement
         // isole a cette chaine specifique plutot qu'une modification du
         // calcul general, qui semble correct pour le reste de cet ecran.
-        renderer.drawText( centeredX( continueText, FontSize::Wide ) - 20, 58 * 2, continueText, RGBColor{ 0x19, 0x18, 0x14 }, FontSize::Wide );
+        // 2e ajustement (retour de Jicehel : maintenant trop a gauche,
+        // "d'une lettre" sur AKA comme sur PC -- le -20px precedent
+        // etait une estimation "a la louche", ajustee ici de +8px
+        // (une largeur de caractere Wide) vers la droite.
+        renderer.drawText( centeredX( continueText, FontSize::Wide ) - 12, 58 * 2, continueText, RGBColor{ 0x19, 0x18, 0x14 }, FontSize::Wide );
     }
 }

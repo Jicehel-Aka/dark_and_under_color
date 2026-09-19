@@ -1,7 +1,7 @@
 {
   "CTRL_MOVE": "Hoch/Runter: vor/zurueck",
-  "CTRL_STRAFE": "Links/Rechts: seitwaerts",
-  "CTRL_TURN": "L1/R1: umschauen",
+  "CTRL_STRAFE": "L1/R1: seitwaerts",
+  "CTRL_TURN": "Links/Rechts: umschauen",
   "CTRL_ACTION": "A: bestaetigen/angreifen",
   "CTRL_BACK": "B: zurueck/ablehnen",
   "CTRL_INVENTORY": "C: Inventar",

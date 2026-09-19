@@ -47,9 +47,11 @@ cmake -S platform_sdl -B build
 cmake --build build
 ```
 
-L'exécutable a besoin des dossiers `data/`, `lang/` et `music/` de
-`platform_sdl/` à côté de lui pour fonctionner (déjà le cas si vous
-lancez depuis le dossier de build généré par CMake).
+L'exécutable a besoin du dossier `music/` de `platform_sdl/` à côté de
+lui pour fonctionner (seule chose encore externe -- images et langues
+sont directement embarquées dans le binaire, aucun autre dossier à
+copier ; déjà le cas si vous lancez depuis le dossier de build généré
+par CMake).
 
 Zoom réglable en jeu via un petit menu en haut de la fenêtre (x2 par
 défaut, x3/x4 au choix), ou en argument de ligne de commande
@@ -73,13 +75,17 @@ Actions (un tag doit alors être saisi à la main).
 
 | Touche PC | Bouton AKA | Action |
 |---|---|---|
-| Haut / Bas | D-pad haut/bas | Avancer / reculer |
-| Gauche / Droite | D-pad gauche/droite | Déplacement latéral |
-| Q / E | L1 / R1 | Tourner le regard |
-| Z | A | Valider / attaquer / utiliser |
-| X | B | Retour / refuser / jeter |
-| C | C | Inventaire |
-| V | D | Mini-carte |
+| Haut / Bas (ou W / S) | D-pad haut/bas | Avancer / reculer |
+| Gauche / Droite (ou A / D) | D-pad gauche/droite | Tourner le regard |
+| Q / E | L1 / R1 | Déplacement latéral |
+| Z / Espace | A | Valider / attaquer / utiliser |
+| X / Retour arrière | B | Retour / refuser / jeter |
+| C / Suppr | C | Inventaire |
+| V / Entrée | D | Mini-carte |
+
+Les touches PC sont données par leur **position physique** (mêmes
+touches quel que soit AZERTY/QWERTY/QWERTZ) : W/A/S/D + Q/E forment le
+schéma FPS classique, Z/X/C/V la rangée d'actions juste en dessous.
 
 Sur AKA, le bouton MENU ouvre le menu système (volume, retour au
 loader, langue, crédits) ; un appui long dessus prend une capture

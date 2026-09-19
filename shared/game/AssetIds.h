@@ -55,6 +55,12 @@ enum class ImageAsset : uint16_t {
 
     // Écran splash/titre/intro (Splash.pde).
     SplashCredits, SplashTitleScreen, SplashIntro,
+    // BUT_largeBut.png -- REINTEGRE (retire par erreur en session 33
+    // comme "asset mort" : il n'etait inutilise que parce que le texte
+    // PLAY/CREDITS etait dessine flottant, sans bouton dessous, illisible
+    // sur le fond sombre de l'ecran-titre. Signale par Jicehel : "grand
+    // vide sous Dark & Under").
+    SplashLargeButton,
     InventorySelectHighlight,
 
     // UI permanente pendant l'exploration/le combat (UI.pde).
@@ -66,6 +72,13 @@ enum class ImageAsset : uint16_t {
     // (retour de Jicehel : visibles et blanches dans l'original) meme si
     // non cliquables ici (remplacees par de vrais boutons physiques).
     ArrowForward, ArrowBackward, ArrowLeft, ArrowRight, ArrowRotateLeft, ArrowRotateRight,
+
+    // Icones d'action rapide en grille 2x2 sous PV/XP (BUT_sword/magic/
+    // potion/shield -- retour de Jicehel : "rien n'apparait dans les 4
+    // icones", completement oubliees en retirant les boutons tactiles,
+    // contrairement aux fleches de direction deja reintegrees). Meme
+    // traitement : reperes visuels statiques, non cliquables.
+    IconSword, IconMagic, IconPotion, IconShield,
 
     Count, // sentinelle -- nombre total d'assets, ne pas utiliser comme ID
 };

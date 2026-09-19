@@ -1,7 +1,7 @@
 {
   "CTRL_MOVE": "Arriba/Abajo: mover",
-  "CTRL_STRAFE": "Izq/Der: lateral",
-  "CTRL_TURN": "L1/R1: girar",
+  "CTRL_STRAFE": "L1/R1: lateral",
+  "CTRL_TURN": "Izq/Der: girar",
   "CTRL_ACTION": "A: confirmar/atacar",
   "CTRL_BACK": "B: volver/rechazar",
   "CTRL_INVENTORY": "C: inventario",

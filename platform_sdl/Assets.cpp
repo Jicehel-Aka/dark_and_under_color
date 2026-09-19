@@ -76,6 +76,11 @@ const char* assetFileName( ImageId id ) {
         case ImageAsset::ArrowRight: return "BUT_right.png";
         case ImageAsset::ArrowRotateLeft: return "BUT_turnLeft.png";
         case ImageAsset::ArrowRotateRight: return "BUT_turnRight.png";
+        case ImageAsset::IconSword: return "BUT_sword.png";
+        case ImageAsset::IconMagic: return "BUT_magic.png";
+        case ImageAsset::IconPotion: return "BUT_potion.png";
+        case ImageAsset::IconShield: return "BUT_shield.png";
+        case ImageAsset::SplashLargeButton: return "BUT_largeBut.png";
         default: return nullptr;
     }
 }

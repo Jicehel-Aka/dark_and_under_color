@@ -1,7 +1,7 @@
 {
   "CTRL_MOVE": "Haut/Bas : avancer/reculer",
-  "CTRL_STRAFE": "Gauche/Droite : strafe",
-  "CTRL_TURN": "L1/R1 : tourner le regard",
+  "CTRL_STRAFE": "L1/R1 : deplacement lateral",
+  "CTRL_TURN": "Gauche/Droite : tourner",
   "CTRL_ACTION": "A : valider/attaquer",
   "CTRL_BACK": "B : retour/refuser/jeter",
   "CTRL_INVENTORY": "C : inventaire",

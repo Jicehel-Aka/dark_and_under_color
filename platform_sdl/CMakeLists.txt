@@ -26,6 +26,8 @@ add_executable(darkandundercolor_pc
     ../shared/game/rendering/UI.cpp
     SdlTranslator.cpp
     ../shared/game/GameApp.cpp
+    embedded/embedded_images.cpp
+    embedded/embedded_lang.cpp
 )
 
 target_include_directories(darkandundercolor_pc PRIVATE
@@ -35,6 +37,7 @@ target_include_directories(darkandundercolor_pc PRIVATE
     ../shared/game/entities
     ../shared/game/levels
     ../shared/game/rendering
+    ../components/aka_font/include
     .
 )
 

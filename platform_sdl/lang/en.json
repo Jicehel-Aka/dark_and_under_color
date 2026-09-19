@@ -1,7 +1,7 @@
 {
   "CTRL_MOVE": "Up/Down: move forward/back",
-  "CTRL_STRAFE": "Left/Right: strafe",
-  "CTRL_TURN": "L1/R1: turn",
+  "CTRL_STRAFE": "L1/R1: strafe",
+  "CTRL_TURN": "Left/Right: turn",
   "CTRL_ACTION": "A: confirm/attack/use",
   "CTRL_BACK": "B: back/decline/discard",
   "CTRL_INVENTORY": "C: inventory",

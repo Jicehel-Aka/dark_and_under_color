@@ -13,7 +13,7 @@ idf_component_register(
          "../../shared/game/rendering/UI.cpp"
          "../../shared/game/GameApp.cpp"
     INCLUDE_DIRS "." "../../shared/platform" "../../shared/game" "../../shared/game/entities" "../../shared/game/levels" "../../shared/game/rendering"
-    REQUIRES gamebuino aka_runtime)
+    REQUIRES gamebuino aka_runtime aka_font)
 
 # Meme liste de tolerances que dark_and_under_aka (code Arduboy repris
 # tel quel de l'autre cote, mais ce projet-ci n'en avait jamais herite

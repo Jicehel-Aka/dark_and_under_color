@@ -21,10 +21,10 @@ class SdlRenderer : public IRenderer {
     // le zoom (sinon elle deviendrait illisible a x2 ou enorme a x4).
     static constexpr int kMenuBarHeight = 20;
 
-    // zoom : x2/x3/x4 (voir setZoom) -- assetDir : dossier contenant
-    // les PNG d'origine (le "data/" du projet Processing, réutilisé
-    // tel quel -- voir Assets.h pour la table ImageId -> nom de fichier).
-    SdlRenderer( int zoom, const std::string& assetDir );
+    // zoom : x2/x3/x4 (voir setZoom). Plus de parametre assetDir --
+    // toutes les images sont embarquees dans l'executable (voir
+    // platform_sdl/embedded/), demande par Jicehel.
+    SdlRenderer( int zoom );
     ~SdlRenderer() override;
 
     void fillRect( int16_t x, int16_t y, int16_t w, int16_t h, RGBColor color ) override;
@@ -67,7 +67,12 @@ class SdlRenderer : public IRenderer {
     // avec cette valeur. Le bouton "?" bascule lui-meme
     // isHelpPanelOpen() en interne (pas besoin que l'appelant s'en
     // occupe, contrairement au zoom qui modifie la taille de fenetre).
-    int renderMenuBar( int mouseX, int mouseY, bool mouseClicked );
+    // muted : etat courant du son (en/out -- l'appelant, main.cpp,
+    // possede la vraie coupure via Mix_VolumeMusic ; ce booleen sert
+    // juste a dessiner le bouton dans le bon etat et a le faire basculer
+    // au clic). Demande par Jicehel : bouton pour couper la musique
+    // directement depuis cette barre.
+    int renderMenuBar( int mouseX, int mouseY, bool mouseClicked, bool& muted );
 
     // Panneau d'aide demande par Jicehel (commandes PC/touche AKA
     // correspondante, autres versions, credits, lien GitHub) -- a
@@ -86,7 +91,6 @@ class SdlRenderer : public IRenderer {
     SDL_Texture* getTexture( ImageId image );
     void drawMenuText( int x, int y, const char* text, RGBColor color ); // texte en coordonnees reelles, non affecte par le zoom du jeu
 
-    std::string assetDir;
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
     std::unordered_map<ImageId, SDL_Texture*> textureCache;

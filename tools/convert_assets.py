@@ -67,14 +67,27 @@ def convert_image(path, gamma=None, recolor=None):
         # par Jicehel. Mesure directe : source brute (avant tout
         # rehaussement) deja tres proche de la cible reelle -- gamma
         # calcule a partir de deux points de mesure (source vs capture
-        # de reference) : 0.901 (credits) et 0.958 (titre), moyenne
-        # retenue 0.93 (leger assombrissement, pas un eclaircissement).
+        # de reference) : 0.901 (credits) et 0.958 (titre).
+        #
+        # 3e passe : la mesure precedente comparait a une capture PC (24
+        # bits, sans reduction de couleur) -- mais le probleme signale
+        # cette fois est SPECIFIQUE A L'AKA ("le PC est correct, sur
+        # l'AKA le rouge est plus fade") : la conversion RGB565 (5-6-5
+        # bits, CE fichier) reduit intrinsequement le nombre de paliers
+        # de couleur par rapport a l'original 24 bits que charge le PC
+        # directement -- une perte de vivacite qui n'existe QUE sur AKA,
+        # jamais mesurable en comparant a une capture PC. Compense ici
+        # par un rehaussement de SATURATION (nouveau levier, jamais
+        # touche jusqu'ici) en plus d'un gamma legerement eclairci
+        # (revient en partie sur l'assombrissement de la 2e passe) et
+        # d'un contraste renforce.
         alpha = im.split()[3]
         rgb = im.convert("RGB")
-        inv_gamma = 1.0 / gamma
+        rgb = ImageEnhance.Color(rgb).enhance(1.35)
+        inv_gamma = 1.0 / (gamma * 1.20)
         lut = [int((i / 255.0) ** inv_gamma * 255) for i in range(256)]
         rgb = rgb.point(lut * 3)
-        rgb = ImageEnhance.Contrast(rgb).enhance(1.10)
+        rgb = ImageEnhance.Contrast(rgb).enhance(1.18)
         im = rgb.convert("RGBA")
         im.putalpha(alpha)
     w, h = im.size

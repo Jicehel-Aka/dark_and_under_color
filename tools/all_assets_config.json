@@ -291,5 +291,25 @@
   {
     "id": "ArrowRotateRight",
     "file": "BUT_turnRight.png"
+  },
+  {
+    "id": "IconSword",
+    "file": "BUT_sword.png"
+  },
+  {
+    "id": "IconMagic",
+    "file": "BUT_magic.png"
+  },
+  {
+    "id": "IconPotion",
+    "file": "BUT_potion.png"
+  },
+  {
+    "id": "IconShield",
+    "file": "BUT_shield.png"
+  },
+  {
+    "id": "SplashLargeButton",
+    "file": "BUT_largeBut.png"
   }
 ]

@@ -1,5 +1,6 @@
 #include "AkaRenderer.h"
 #include "fonts/simple5x8_font.h"
+#include "aka_font/gb_text_render.h"
 
 // Centrage : viewport logique 150x81 (x2 = 300x162) sur un ecran AKA
 // 320x240 -- marge (320-300)/2=10, (240-162)/2=39. BUG TROUVE ET
@@ -51,16 +52,25 @@ void AkaRenderer::drawImageRegionScaled( int16_t x, int16_t y, int16_t dst_w, in
 
 void AkaRenderer::drawText( int16_t x, int16_t y, const char* text, RGBColor color, FontSize size ) {
     // Deux polices disponibles depuis le retour de Jicehel apres test
-    // reel : Wide (8x8, gb_graphics::print_str -- celle du menu
-    // systeme AKA aussi) convient mieux quand il y a peu de texte a
+    // reel : Wide (8x8) convient mieux quand il y a peu de texte a
     // afficher (l'ecran de victoire, par exemple -- le 5x8 y "faisait
     // vide"), Narrow (5x8 "Simple 5x8") reste necessaire la ou plus de
     // texte doit tenir (dialogue de butin). Voir Dialogue.cpp pour le
     // choix fait par ecran.
+    //
+    // BUG TROUVE ET CORRIGE : Wide passait par gfx.print_str(), limite
+    // a l'ASCII pur (font8x8_basic) -- tout caractere accentue
+    // s'affichait en "?" ou pas du tout. Remplace par le composant
+    // aka_font (fourni par Jicehel) : decodage UTF-8 correct + glyphes
+    // accentues francais/allemand/espagnol, meme chasse fixe 8px. Le
+    // menu systeme AKA (aka_runtime.cpp) continue lui d'utiliser
+    // gfx.print_str() directement -- hors de mon controle, seul le
+    // texte dessine par LE JEU (via ici) beneficie de ce changement.
     if ( size == FontSize::Wide ) {
-        gfx.setColor( gfx.makeColor( color.r, color.g, color.b ) );
-        gfx.move_cursor( x + kOffsetX, y + kOffsetY );
-        gfx.print_str( text );
+        uint16_t pen = gfx.makeColor( color.r, color.g, color.b );
+        int16_t cx = x + kOffsetX;
+        const int16_t cy = y + kOffsetY;
+        gb_text::draw_utf8( cx, cy, text, [&]( int px, int py ) { gfx.drawPixel( px, py, pen ); } );
         return;
     }
 

@@ -1,19 +1,16 @@
 #include "SdlTranslator.h"
-#include <fstream>
-#include <sstream>
+#include "embedded/embedded_assets.h"
 
-SdlTranslator::SdlTranslator( const std::string& commonLangFile, const std::string& gameLangFile ) {
-    loadFile( commonLangFile );
-    loadFile( gameLangFile );
+SdlTranslator::SdlTranslator( const std::string& commonLangName, const std::string& gameLangName ) {
+    loadEmbedded( commonLangName );
+    loadEmbedded( gameLangName );
 }
 
-void SdlTranslator::loadFile( const std::string& path ) {
-    std::ifstream f( path );
-    if ( !f.is_open() ) return; // absent -- pas grave, translate() repliera sur la cle
+void SdlTranslator::loadEmbedded( const std::string& name ) {
+    const EmbeddedAsset* asset = findEmbeddedLang( name.c_str() );
+    if ( asset == nullptr ) return; // absent -- pas grave, translate() repliera sur la cle
 
-    std::stringstream buffer;
-    buffer << f.rdbuf();
-    std::string content = buffer.str();
+    std::string content( reinterpret_cast<const char*>( asset->data ), asset->size );
 
     // Analyseur minimal : cherche des paires "CLE": "valeur" -- suffisant
     // pour le format plat utilise par tous les lang/*.json du projet

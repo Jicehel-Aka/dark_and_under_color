@@ -1,6 +1,8 @@
 #include "SdlRenderer.h"
 #include "Assets.h"
 #include "AssetIds.h"
+#include "aka_font/gb_text_render.h"
+#include "embedded/embedded_assets.h"
 #include <SDL2/SDL_image.h>
 #include <cstdio>
 
@@ -9,8 +11,8 @@
 // plateformes.
 static constexpr int16_t kNarrowCharAdvance = 6;
 
-SdlRenderer::SdlRenderer( int zoom, const std::string& assetDir )
-    : assetDir( assetDir ), currentZoom( zoom )
+SdlRenderer::SdlRenderer( int zoom )
+    : currentZoom( zoom )
 {
     SDL_Init( SDL_INIT_VIDEO );
     IMG_Init( IMG_INIT_PNG );
@@ -47,10 +49,22 @@ SDL_Texture* SdlRenderer::getTexture( ImageId image ) {
     const char* fileName = assetFileName( image );
     if ( fileName == nullptr ) return nullptr;
 
-    std::string path = assetDir + "/" + fileName;
-    SDL_Surface* surface = IMG_Load( path.c_str() );
+    // BUG TROUVE ET CORRIGE (feature) : chargeait depuis un fichier sur
+    // disque ("data/" a cote de l'exe) -- demande par Jicehel : tout
+    // embarque directement dans l'executable (voir
+    // platform_sdl/embedded/, genere par tools/embed_pc_assets.py).
+    // IMG_Load_RW + SDL_RWFromConstMem decodent le PNG depuis la memoire
+    // au lieu du disque -- meme resultat, plus de dossier a distribuer
+    // a cote de l'exe.
+    const EmbeddedAsset* asset = findEmbeddedImage( fileName );
+    if ( asset == nullptr ) {
+        std::fprintf( stderr, "SdlRenderer: image embarquee introuvable : %s\n", fileName );
+        return nullptr;
+    }
+    SDL_RWops* rw = SDL_RWFromConstMem( asset->data, (int)asset->size );
+    SDL_Surface* surface = IMG_Load_RW( rw, 1 ); // 1 = ferme rw automatiquement apres lecture
     if ( surface == nullptr ) {
-        std::fprintf( stderr, "SdlRenderer: impossible de charger %s\n", path.c_str() );
+        std::fprintf( stderr, "SdlRenderer: impossible de decoder %s (embarque)\n", fileName );
         return nullptr;
     }
 
@@ -98,19 +112,20 @@ void SdlRenderer::drawImageRegionScaled( int16_t x, int16_t y, int16_t dst_w, in
 }
 
 void SdlRenderer::drawText( int16_t x, int16_t y, const char* text, RGBColor color, FontSize size ) {
-    // Cote SDL, une seule police disponible (5x8) -- le parametre size
-    // est accepte pour respecter l'interface commune mais ignore : pas
-    // de donnees 8x8 embarquees ici (uniquement utile pour matcher le
-    // rendu AKA, cette build reste une build de test, pas un objectif
-    // de fidelite pixel-perfect avec le menu systeme AKA qui n'existe
-    // pas cote PC de toute facon).
-    (void)size;
-    // Rectangle-repere remplace par un vrai rendu de glyphes -- reutilise
-    // les memes donnees que la build AKA (simple5x8_font.h, police
-    // "Simple 5x8", licence 1001Fonts Free For Commercial Use) plutot
-    // que d'ajouter une dependance SDL_ttf : coherence visuelle garantie
-    // entre les deux plateformes, et rien a installer de plus ici.
+    // BUG TROUVE ET CORRIGE : "size" etait ignore, TOUJOURS rendu en
+    // Narrow (5x8) meme quand Wide etait demande -- plus de coherence
+    // visuelle possible avec AKA pour les ecrans qui choisissent Wide
+    // (victoire, etc.). Corrige avec le composant aka_font (fourni par
+    // Jicehel) pour le chemin Wide -- meme rendu UTF-8+accents que cote
+    // AKA desormais, les deux plateformes utilisent la meme logique de
+    // dessin (gb_text::draw_utf8), juste une fonction "allumer ce pixel"
+    // differente (SDL_RenderDrawPoint ici, gfx.drawPixel cote AKA).
     SDL_SetRenderDrawColor( renderer, color.r, color.g, color.b, 255 );
+
+    if ( size == FontSize::Wide ) {
+        gb_text::draw_utf8( x, y, text, [&]( int px, int py ) { SDL_RenderDrawPoint( renderer, px, py ); } );
+        return;
+    }
 
     int16_t cx = x;
     for ( const char* p = text; *p != '\0'; ++p ) {
@@ -145,13 +160,14 @@ bool SdlRenderer::verifyAssetsLoadable() {
     // ObjPotionIcon (le tout premier asset de l'enum, voir AssetIds.h) --
     // fait partie des 12 tout premiers assets ajoutes au tout debut du
     // portage, garanti present quel que soit l'etat du reste de la
-    // table -- si celui-la charge, le dossier data/ est bon.
+    // table -- si celui-la charge, l'embarquement des images a bien
+    // fonctionne (plus de dossier data/ externe a verifier maintenant
+    // que tout est dans l'executable).
     SDL_Texture* tex = getTexture( (ImageId)ImageAsset::ObjPotionIcon );
     if ( tex != nullptr ) return true;
 
-    std::string msg = "Impossible de charger les images du jeu depuis :\n" + assetDir +
-        "\n\nVerifie que le dossier \"data\" se trouve bien a cote de l'executable.";
-    SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Dark & Under (couleur) -- assets introuvables", msg.c_str(), window );
+    SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Dark & Under (couleur) -- assets introuvables",
+        "Impossible de decoder les images embarquees dans l'executable.\nCe binaire semble corrompu ou incomplet.", window );
     return false;
 }
 
@@ -169,24 +185,14 @@ void SdlRenderer::beginGameArea() {
 }
 
 void SdlRenderer::drawMenuText( int x, int y, const char* text, RGBColor color ) {
+    // Meme rendu UTF-8+accents que drawText(FontSize::Wide) -- utile ici
+    // aussi (menu/aide), plutot que de re-ecrire un rendu ASCII-only
+    // separe pour cette seule fonction.
     SDL_SetRenderDrawColor( renderer, color.r, color.g, color.b, 255 );
-    int cx = x;
-    for ( const char* p = text; *p != '\0'; ++p ) {
-        uint8_t code = (uint8_t)*p;
-        if ( code < 32 || code > 126 ) { cx += kNarrowCharAdvance; continue; }
-        const uint8_t* glyph = simple5x8_font[code - 32];
-        for ( uint8_t dy = 0; dy < kSimple5x8Height; ++dy ) {
-            uint8_t line = glyph[dy];
-            for ( uint8_t dx = 0; dx < kSimple5x8Width; ++dx ) {
-                if ( line & 1 ) SDL_RenderDrawPoint( renderer, cx + dx, y + dy );
-                line >>= 1;
-            }
-        }
-        cx += kNarrowCharAdvance;
-    }
+    gb_text::draw_utf8( x, y, text, [&]( int px, int py ) { SDL_RenderDrawPoint( renderer, px, py ); } );
 }
 
-int SdlRenderer::renderMenuBar( int mouseX, int mouseY, bool mouseClicked ) {
+int SdlRenderer::renderMenuBar( int mouseX, int mouseY, bool mouseClicked, bool& muted ) {
     // Barre de menu demandee par Jicehel -- coordonnees REELLES (pas
     // affectees par le zoom du jeu, donc toujours la meme taille de
     // texte/boutons quel que soit le zoom choisi). Viewport plein
@@ -222,10 +228,25 @@ int SdlRenderer::renderMenuBar( int mouseX, int mouseY, bool mouseClicked ) {
         if ( hovered && mouseClicked ) clickedZoom = b.zoom;
     }
 
+    // Bouton son -- coupe/retablit la musique (retour de Jicehel).
+    // "muted" est mis a jour ici au clic ; c'est main.cpp qui applique
+    // reellement la coupure (Mix_VolumeMusic), ce fichier ne connait
+    // pas SDL_mixer.
+    {
+        SDL_Rect rect{ 140, 2, kButtonH, kButtonH };
+        bool hovered = ( mouseX >= rect.x && mouseX < rect.x + rect.w && mouseY >= rect.y && mouseY < rect.y + rect.h );
+        if ( muted ) SDL_SetRenderDrawColor( renderer, 0xff, 0x48, 0x00, 255 );
+        else if ( hovered ) SDL_SetRenderDrawColor( renderer, 70, 65, 55, 255 );
+        else SDL_SetRenderDrawColor( renderer, 50, 46, 40, 255 );
+        SDL_RenderFillRect( renderer, &rect );
+        drawMenuText( rect.x + 2, 6, muted ? "0" : "S", muted ? RGBColor{ 0, 0, 0 } : RGBColor{ 0xe0, 0xd8, 0xc8 } );
+        if ( hovered && mouseClicked ) muted = !muted;
+    }
+
     // Bouton "?" -- panneau d'aide (commandes, versions, credits, lien
     // GitHub) demande par Jicehel. Juste a droite des boutons de zoom.
     {
-        SDL_Rect rect{ 140, 2, kButtonH, kButtonH }; // carre, meme hauteur que les boutons de zoom
+        SDL_Rect rect{ 166, 2, kButtonH, kButtonH }; // carre, decale pour laisser la place au bouton son
         bool hovered = ( mouseX >= rect.x && mouseX < rect.x + rect.w && mouseY >= rect.y && mouseY < rect.y + rect.h );
         if ( helpPanelOpen ) SDL_SetRenderDrawColor( renderer, 0xff, 0x48, 0x00, 255 );
         else if ( hovered ) SDL_SetRenderDrawColor( renderer, 70, 65, 55, 255 );
@@ -260,13 +281,17 @@ void SdlRenderer::renderHelpPanel() {
     constexpr int lh = 9; // hauteur de ligne, serree pour tenir a x2 (fenetre la plus petite)
     int x = 4;
 
+    // Indication de fermeture demandee par Jicehel (le mecanisme
+    // existait deja -- recliquer sur "?" -- mais pas assez visible).
+    drawMenuText( x, y, "(cliquez a nouveau sur ? pour fermer)", dim ); y += lh + 3;
+
     drawMenuText( x, y, "COMMANDES (touche PC = bouton AKA)", title ); y += lh + 2;
-    drawMenuText( x, y, "Haut/Bas: avancer/reculer", text ); y += lh;
-    drawMenuText( x, y, "Gauche/Droite: deplacement lateral", text ); y += lh;
-    drawMenuText( x, y, "Q / E = L1/R1: tourner le regard", text ); y += lh;
-    drawMenuText( x, y, "Z = A: valider/attaquer/utiliser", text ); y += lh;
-    drawMenuText( x, y, "X = B: retour/refuser/jeter", text ); y += lh;
-    drawMenuText( x, y, "C: inventaire   V: mini-carte", text ); y += lh + 4;
+    drawMenuText( x, y, "Haut/Bas (ou W/S): avancer/reculer", text ); y += lh;
+    drawMenuText( x, y, "Gauche/Droite (ou A/D): tourner", text ); y += lh;
+    drawMenuText( x, y, "Q / E = L1/R1: deplacement lateral", text ); y += lh;
+    drawMenuText( x, y, "Z/Espace = A: valider/attaquer", text ); y += lh;
+    drawMenuText( x, y, "X/Retour arr. = B: retour/refuser", text ); y += lh;
+    drawMenuText( x, y, "C/Suppr: inventaire  V/Entree: carte", text ); y += lh + 4;
 
     drawMenuText( x, y, "AUTRES VERSIONS", title ); y += lh + 2;
     drawMenuText( x, y, "Console : Gamebuino AKA (ESP32-S3)", text ); y += lh;

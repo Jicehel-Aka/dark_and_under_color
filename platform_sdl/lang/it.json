@@ -1,7 +1,7 @@
 {
   "CTRL_MOVE": "Su/Giu: avanti/indietro",
-  "CTRL_STRAFE": "Sin/Des: laterale",
-  "CTRL_TURN": "L1/R1: girare",
+  "CTRL_STRAFE": "L1/R1: laterale",
+  "CTRL_TURN": "Sin/Des: girare",
   "CTRL_ACTION": "A: conferma/attacca",
   "CTRL_BACK": "B: indietro/rifiuta",
   "CTRL_INVENTORY": "C: inventario",
