@@ -49,17 +49,28 @@ def rgb565(r, g, b):
 def convert_image(path, gamma=None, recolor=None):
     im = Image.open(path).convert("RGBA")
     if recolor:
-        # Remplace une couleur precise par une autre (meme forme/alpha,
-        # juste la teinte) -- utilise pour InventorySelectHighlight :
-        # jaune vif (255,222,0) sur fond de parchemin beige/tan a un
-        # contraste tres faible (signale par Jicehel, "se voit peu").
+        # Remplace une ou plusieurs couleurs precises par d'autres (meme
+        # forme/alpha, juste la teinte) -- utilise d'abord pour
+        # InventorySelectHighlight (jaune vif sur parchemin beige, "se
+        # voit peu"), puis pour SplashLargeButton (marron -> gris clair,
+        # voir plus bas : le marron de l'original devient gris sombre
+        # une fois reduit en RGB565 sur AKA -- illisible avec du texte
+        # noir dessus -- alors que sur PC, qui charge le PNG 24 bits
+        # directement, le marron reste correct. Recolorer en gris cote
+        # AKA uniquement evite le probleme a la racine : un gris pur n'a
+        # pas de teinte a deformer, contrairement au marron.
+        #
+        # "recolor" accepte soit UNE paire (old, new) -- ancien usage,
+        # garde tel quel -- soit une LISTE de paires (plusieurs teintes a
+        # remplacer en une passe, ex. les 3 nuances d'un bouton biseaute).
         px = im.load()
-        old, new = recolor
-        for y in range(im.height):
-            for x in range(im.width):
-                r, g, b, a = px[x, y]
-                if (r, g, b) == old:
-                    px[x, y] = (new[0], new[1], new[2], a)
+        pairs = recolor if isinstance(recolor, list) else [recolor]
+        for old, new in pairs:
+            for y in range(im.height):
+                for x in range(im.width):
+                    r, g, b, a = px[x, y]
+                    if (r, g, b) == old:
+                        px[x, y] = (new[0], new[1], new[2], a)
     if gamma is not None:
         # BUG TROUVE ET CORRIGE (2e passe) : gamma=1.8 choisi "a l'oeil"
         # sans reference precise -- SURCORRIGE largement une fois compare
@@ -130,7 +141,18 @@ def main():
         image_id = entry["id"]
         file_name = entry["file"]
         path = f"{src_dir}/{file_name}"
-        recolor = ( tuple(entry["recolor"][0]), tuple(entry["recolor"][1]) ) if "recolor" in entry else None
+        # Supporte les deux formats JSON : une seule paire
+        # [[r,g,b],[r,g,b]] (ancien usage) ou une liste de paires
+        # [[[r,g,b],[r,g,b]], [[r,g,b],[r,g,b]], ...] (plusieurs teintes,
+        # voir SplashLargeButton).
+        if "recolor" in entry:
+            raw = entry["recolor"]
+            if isinstance(raw[0][0], list):
+                recolor = [ (tuple(pair[0]), tuple(pair[1])) for pair in raw ]
+            else:
+                recolor = ( tuple(raw[0]), tuple(raw[1]) )
+        else:
+            recolor = None
         w, h, pixels = convert_image(path, gamma=entry.get("gamma"), recolor=recolor)
         total_bytes += len(pixels) * 2
         array_name = f"k{image_id}Pixels"

@@ -57,8 +57,17 @@ void Splash::render( IRenderer& renderer, ITranslator& translator ) {
             const int16_t playTextX = (int16_t)( playX + ( kButtonW - (int16_t)strlen( playText ) * kWideCharWidthPx ) / 2 );
             const int16_t creditsTextX = (int16_t)( creditsX + ( kButtonW - (int16_t)strlen( creditsText ) * kWideCharWidthPx ) / 2 );
 
-            renderer.drawText( playTextX, textY, playText, RGBColor{ 0x19, 0x18, 0x14 } );
-            renderer.drawText( creditsTextX, textY, creditsText, RGBColor{ 0x19, 0x18, 0x14 } );
+            // Couleur du texte demandee par Jicehel : gris CLAIR plutot
+            // que sombre, et IDENTIQUE sur AKA et PC (pas de version
+            // divergente entre plateformes -- le but est que les deux
+            // restent visuellement identiques, seuls les CONTROLES
+            // different pour des raisons materielles). Contraste fort
+            // sur le fond marron du bouton, sur les deux plateformes,
+            // sans dependre de la teinte exacte que prend ce marron
+            // apres reduction RGB565 sur AKA.
+            const RGBColor kButtonTextColor{ 0xe4, 0xe2, 0xda };
+            renderer.drawText( playTextX, textY, playText, kButtonTextColor );
+            renderer.drawText( creditsTextX, textY, creditsText, kButtonTextColor );
             break;
         }
 

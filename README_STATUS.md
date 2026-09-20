@@ -1316,3 +1316,54 @@ Vérifié numériquement (pas juste visuellement à l'oeil) : même le
 texte le plus long des 5 langues ("A: SPIELEN", allemand) tient avec
 16px de marge de chaque côté dans le nouveau bouton. Compilation
 vérifiée.
+
+## Session 38 : bouton titre gris sombre sur AKA (illisible avec texte noir)
+
+Retour de Jicehel : le joli marron du bouton PLAY/CREDITS (correct sur
+PC/Linux, confirmé) devient gris sombre une fois passé par la
+réduction RGB565 sur AKA -- texte noir illisible dessus. Plutôt que de
+continuer à chasser un gamma qui préserverait un marron précis (déjà
+tenté deux fois sans résultat stable), recoloré directement en gris
+CLAIR côté AKA uniquement -- un gris pur n'a pas de teinte à déformer
+par la quantification RGB565, contrairement au marron, donc plus
+robuste par nature. Le PC continue de charger le PNG 24 bits
+d'origine, son marron reste inchangé.
+
+**`convert_assets.py` étendu** : le mécanisme `recolor` (déjà utilisé
+pour `InventorySelectHighlight`) ne gérait qu'UNE seule paire de
+couleurs -- étendu pour accepter une LISTE de paires, nécessaire ici
+car le bouton a 3 nuances de marron (biseau clair/moyen/foncé) à
+remapper chacune vers un gris correspondant, pour garder l'effet de
+relief plutôt que d'aplatir en une seule teinte plate.
+
+Vérifié par simulation du pipeline complet (recolorage + gamma +
+saturation + contraste déjà en place) avant regénération : couleur
+moyenne finale ~171/170/163, largement assez clair pour contraster
+avec le texte noir (25/24/20). Compilation et JSON revérifiés après
+génération.
+
+## Session 39 : correction refaite -- texte gris clair partagé, pas de bouton divergent
+
+Jicehel a refusé la solution de la session précédente (bouton recoloré
+en gris côté AKA seulement, marron conservé côté PC) : l'objectif est
+la parité visuelle entre les deux plateformes, seuls les CONTROLES
+doivent différer (raisons matérielles). Une divergence de couleur de
+bouton entre AKA et PC allait à l'encontre de ce principe.
+
+**Annulé** : le recolorage marron->gris de `SplashLargeButton` retiré
+de la config, régénéré -- le bouton redevient identique (marron
+d'origine) sur les deux plateformes.
+
+**Corrigé autrement, dans le code PARTAGE** (`Splash.cpp`, donc
+identique sur AKA et PC par construction) : couleur du texte
+PLAY/CREDITS changée de sombre à gris clair (0xE4E2DA). Contraste fort
+sur fond marron des deux côtés, sans dépendre de la teinte exacte que
+prend ce marron après réduction RGB565 sur AKA -- résout le problème
+de lisibilité signalé sans introduire de différence visuelle entre
+plateformes.
+
+L'extension multi-paires de `recolor` dans `convert_assets.py` (faite
+la session précédente) reste en place -- capacité générale utile,
+juste plus utilisée pour ce cas précis.
+
+Vérifié : compilation complète, JSON valide.
